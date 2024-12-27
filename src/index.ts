@@ -1,27 +1,31 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
-import { db } from "./db";
+import { prettyJSON } from "hono/pretty-json";
+import { trimTrailingSlash } from "hono/trailing-slash";
+import routes from "./routes";
 
 const app = new Hono();
+
+// Middleware
+app.use(prettyJSON());
+app.use(trimTrailingSlash());
 app.use(logger());
 
-app.get("/", (c) => {
-	return c.text("Hello Hono!");
+app.route("/api", routes);
+app.get("/", (ctx) => ctx.text("Hello, World!"));
+
+app.notFound((ctx) => {
+	return ctx.json({
+		status: "error",
+		message: "Not found",
+	});
 });
 
-app.get("/health-check", async (ctx) => {
-	try {
-		const result = await db.execute("select 1");
-		return ctx.json({
-			status: "success",
-			data: result?.rows,
-		});
-	} catch (error) {
-		return ctx.json({
-			status: "error",
-			data: error,
-		});
-	}
+app.onError((err, ctx) => {
+	return ctx.json({
+		status: "error",
+		...err,
+	});
 });
 
 export default app;
