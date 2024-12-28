@@ -20,13 +20,10 @@ interface JsonCode {
 }
 
 const GIST_URL = "https://raw.githubusercontent.com/prettymuchbryce/http-status-codes/refs/heads/master/codes.json";
-const LOCATIONS = {
-	CODES: "src/constants/http-status-codes.ts",
-	PHRASES: "src/constants/http-status-phrases.ts",
-};
+const FILE_LOCATIONS = "src/constants/http-status-codes.ts";
 
 const run = async () => {
-	console.log("Updating %s and %s", LOCATIONS.CODES, LOCATIONS.PHRASES);
+	console.log(`Updating ${FILE_LOCATIONS}`);
 
 	const project = new Project({ tsConfigFilePath: "tsconfig.json" });
 
@@ -35,10 +32,11 @@ const run = async () => {
 	if (!response.ok) {
 		throw new Error(`Error retrieving codes: ${response.statusText}`);
 	}
+
 	const Codes = (await response.json()) as JsonCode[];
 
 	const statusCodeFile = project.createSourceFile(
-		LOCATIONS.CODES,
+		FILE_LOCATIONS,
 		{},
 		{
 			overwrite: true,
@@ -48,7 +46,7 @@ const run = async () => {
 	statusCodeFile.insertStatements(0, "// Generated file. Do not edit\n");
 	statusCodeFile.insertStatements(1, `// Codes retrieved on ${new Date().toUTCString()} from ${GIST_URL}`);
 
-	for (const { code, constant, comment, isDeprecated } of Codes) {
+	for (const { code, constant, phrase, comment, isDeprecated } of Codes) {
 		statusCodeFile
 			.addVariableStatement({
 				isExported: true,
@@ -56,35 +54,7 @@ const run = async () => {
 				declarations: [
 					{
 						name: constant,
-						initializer: code.toString(),
-					},
-				],
-			})
-			.addJsDoc({
-				description: `${isDeprecated ? "@deprecated\n" : ""}${comment.doc}\n\n${comment.description}`,
-			});
-	}
-
-	const phrasesFile = project.createSourceFile(
-		LOCATIONS.PHRASES,
-		{},
-		{
-			overwrite: true,
-		},
-	);
-
-	phrasesFile.insertStatements(0, "// Generated file. Do not edit\n");
-	phrasesFile.insertStatements(1, `// Phrases retrieved on ${new Date().toUTCString()} from ${GIST_URL}`);
-
-	for (const { constant, phrase, comment, isDeprecated } of Codes) {
-		phrasesFile
-			.addVariableStatement({
-				isExported: true,
-				declarationKind: VariableDeclarationKind.Const,
-				declarations: [
-					{
-						name: constant,
-						initializer: `"${phrase}"`,
+						initializer: `{ CODE: ${code}, PHRASE: "${phrase}", KEY: "${constant}" } as const`,
 					},
 				],
 			})
@@ -94,8 +64,8 @@ const run = async () => {
 	}
 
 	await project.save();
-	await execSync(`bun check ${LOCATIONS.CODES} ${LOCATIONS.PHRASES}`);
-	console.log("Successfully generated http-status-codes.ts and http-status-phrases.ts");
+	await execSync(`bun check ${FILE_LOCATIONS}`);
+	console.log("Successfully generated");
 };
 
 run();

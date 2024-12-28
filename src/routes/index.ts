@@ -1,4 +1,3 @@
-import { db } from "@/db";
 import { Hono } from "hono";
 import authRoutes from "./auth";
 import fileRoutes from "./files";
@@ -8,15 +7,6 @@ import shareRoutes from "./shares";
 import userRoutes from "./users";
 
 const app = new Hono();
-
-// health check
-app.get("/health", async (ctx) => {
-	const result = await db.execute("select 1");
-	return ctx.json({
-		status: "success",
-		data: result?.rows,
-	});
-});
 
 // Mount routes
 app.route("/auth", authRoutes);

@@ -1,3 +1,4 @@
+import type { LevelWithSilent } from "pino";
 import { z } from "zod";
 
 const strToBoolean = z.coerce
@@ -5,17 +6,26 @@ const strToBoolean = z.coerce
 	.transform((val) => val === "true")
 	.default("false");
 
-const configSchema = z.object({
-	APP_ENV: z.enum(["prod", "test", "dev"]).default("dev").optional(),
-	PORT: z.coerce.number().default(3000).optional(),
+const configSchema = z
+	.object({
+		APP_ENV: z.enum(["prod", "test", "dev"]).default("dev"),
+		IsProd: z.boolean().default(false),
+		PORT: z.coerce.number().default(3000),
 
-	// JWT
-	JWT_SECRET: z.string(),
+		// LOGGING
+		LOG_LEVEL: z.custom<LevelWithSilent>().default("info"),
 
-	// DATABASE
-	DATABASE_URL: z.string(),
-	DATABASE_LOGGING: strToBoolean,
-});
+		// JWT
+		JWT_SECRET: z.string(),
+
+		// DATABASE
+		DATABASE_URL: z.string(),
+		DATABASE_LOGGING: strToBoolean,
+	})
+	.superRefine((data) => {
+		data.IsProd = data.APP_ENV === "prod";
+		return data;
+	});
 
 export const Config = configSchema.parse(Bun.env);
 export type Config = z.infer<typeof configSchema>;

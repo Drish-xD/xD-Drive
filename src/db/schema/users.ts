@@ -31,5 +31,5 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 // Zod schema
-export const $User = createInsertSchema(users);
+export const $User = createInsertSchema(users).openapi("User");
 export type TUser = inferType<typeof $User>;
