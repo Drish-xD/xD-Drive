@@ -1,10 +1,10 @@
-import { CODES, PHRASES } from "@/constants";
+import { HTTP_STATUS_CODES, HTTP_STATUS_PHRASES } from "@/constants";
 import type { NotFoundHandler } from "hono";
 
 export const notFound: NotFoundHandler = (ctx) => {
 	return ctx.json({
-		code: CODES.COMMON_CODE.NOT_FOUND,
-		message: PHRASES.COMMON_PHRASES.NOT_FOUND,
+		code: HTTP_STATUS_CODES.NOT_FOUND,
+		message: HTTP_STATUS_PHRASES.NOT_FOUND,
 		path: ctx.req.routePath,
 	});
 };

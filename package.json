@@ -4,7 +4,8 @@
 		"dev": "bun run --hot src/index.ts",
 		"check": "biome check --fix",
 		"drizzle:seed": "bun run ./src/db/seeds/index.ts",
-		"drizzle": "drizzle-kit"
+		"drizzle": "drizzle-kit",
+		"update:statuses": "bun run scripts/update-http-statuses.ts"
 	},
 	"dependencies": {
 		"@neondatabase/serverless": "^0.10.4",
