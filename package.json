@@ -1,5 +1,13 @@
 {
-	"name": "auth_backend",
+	"name": "gdrive_api",
+	"description": "A Google Drive API",
+	"version": "1.0.0",
+	"license": "GPL-3.0-or-later",
+	"author": {
+		"name": "Drish",
+		"email": "hey@drishxd.dev",
+		"url": "https://drishxd.dev"
+	},
 	"scripts": {
 		"dev": "bun run --hot src/index.ts",
 		"check": "biome check --fix",
@@ -10,6 +18,7 @@
 	"dependencies": {
 		"@hono/swagger-ui": "^0.5.0",
 		"@neondatabase/serverless": "^0.10.4",
+		"@scalar/hono-api-reference": "^0.5.165",
 		"drizzle-orm": "^0.38.3",
 		"drizzle-zod": "^0.6.1",
 		"hono": "^4.6.14",
