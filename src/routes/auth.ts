@@ -18,4 +18,12 @@ app.post("/logout", async (ctx) => {
 	return ctx.text("logout");
 });
 
+app.post("/forgot-password", async (ctx) => {
+	return ctx.text("forgot-password");
+});
+
+app.post("/reset-password", async (ctx) => {
+	return ctx.text("reset-password");
+});
+
 export default app;

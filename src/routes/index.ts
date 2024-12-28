@@ -9,6 +9,7 @@ import userRoutes from "./users";
 
 const app = new Hono();
 
+// health check
 app.get("/health", async (ctx) => {
 	const result = await db.execute("select 1");
 	return ctx.json({

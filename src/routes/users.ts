@@ -1,10 +1,16 @@
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 
 const app = new Hono();
 
 app.get("/me", async (ctx) => {
 	// Get current user profile
-	return ctx.text("Hello, world!");
+	const userData = await db.query.users.findFirst({
+		where: eq(users.id, "abc"),
+	});
+	return ctx.json(userData);
 });
 
 app.put("/me", async (ctx) => {

@@ -17,7 +17,7 @@ export const resourceOwners = pgTable(
 			.references(() => users.id),
 		...defaultTimestamps,
 	},
-	(table) => [unique().on(table.resourceId)],
+	(table) => [unique().on(table.resourceId, table.userId)],
 );
 
 // Relations
