@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { createApp } from "@/helpers/create-app";
 import { middleware } from "@/middleware";
 import routes from "@/routes";
-import { swaggerUI } from '@hono/swagger-ui';
+import { swaggerUI } from "@hono/swagger-ui";
 import { apiReference } from "@scalar/hono-api-reference";
 import packageJSON from "../package.json";
 
@@ -23,8 +23,7 @@ app.get("/health", async (ctx) => {
 
 app.route("/api", routes);
 
-app.get('/ui', swaggerUI({ url: '/doc' }))
-
+app.get("/ui", swaggerUI({ url: "/doc" }));
 
 app.doc("/doc", {
 	openapi: "3.0.0",
