@@ -27,5 +27,5 @@ const configSchema = z
 		return data;
 	});
 
-export const Config = configSchema.parse(Bun.env);
+export const Config = configSchema.parse(process.env);
 export type Config = z.infer<typeof configSchema>;

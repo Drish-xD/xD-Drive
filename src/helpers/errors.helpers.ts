@@ -4,13 +4,8 @@ import type { Context, Env, ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { StatusCode } from "hono/utils/http-status";
 import { ZodError } from "zod";
-import type { TError } from "./schema";
-
-type HTTP_STATUS = {
-	readonly CODE: number;
-	readonly PHRASE: string;
-	readonly KEY: string;
-};
+import type { TError } from "./schema.helpers";
+import type { HTTP_STATUS } from "./types";
 
 const HTTP_STATUSES_MAP = Object.entries(HTTP_STATUSES).reduce<Record<number, HTTP_STATUS>>((acc, [_, value]) => {
 	acc[value.CODE] = value;
@@ -61,9 +56,7 @@ export const handleError: ErrorHandler = (error, ctx) => {
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: This is a generic hook that can be used in any context.
-type Result = Parameters<Hook<any, Env, any, any>>["0"];
-
-export const handleZodError = <E extends Env>(result: Result, ctx: Context) => {
+export const handleZodError = <E extends Env>(result: Parameters<Hook<any, Env, any, any>>["0"], ctx: Context) => {
 	if (!result.success) {
 		const error = result?.error;
 		return ctx.json<TError>(

@@ -1,19 +1,21 @@
-import { Hono } from "hono";
-import authRoutes from "./auth";
-import fileRoutes from "./files";
-import folderRoutes from "./folders";
-import groupRoutes from "./groups";
-import shareRoutes from "./shares";
-import userRoutes from "./users";
+import { createApp } from "@/helpers/app.helpers";
+import check from "./check/check.index";
+// import auth from "./auth";
+// import files from "./files";
+// import folders from "./folders";
+// import groups from "./groups";
+// import shares from "./shares";
+// import users from "./users";
 
-const app = new Hono();
-
-// Mount routes
-app.route("/auth", authRoutes);
-app.route("/files", fileRoutes);
-app.route("/folders", folderRoutes);
-app.route("/shares", shareRoutes);
-app.route("/users", userRoutes);
-app.route("/groups", groupRoutes);
+// Mount all the routes to the app
+const app = createApp()
+	.get("/", (ctx) => ctx.text("Hello, World!"))
+	.route("/", check);
+// .route("/auth", auth)
+// .route("/files", files)
+// .route("/folders", folders)
+// .route("/shares", shares)
+// .route("/users", users)
+// .route("/groups", groups);
 
 export default app;

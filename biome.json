@@ -10,7 +10,7 @@
 		"ignore": []
 	},
 	"formatter": {
-		"lineWidth": 200,
+		"lineWidth": 180,
 		"enabled": true,
 		"indentStyle": "tab"
 	},

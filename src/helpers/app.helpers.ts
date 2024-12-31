@@ -1,6 +1,15 @@
-import type { AppInstance } from "@/helpers/create-app";
+import { handleZodError } from "@/helpers/errors.helpers";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
-import packageJSON from "../../../package.json";
+import packageJSON from "../../package.json";
+import type { AppBindings, AppInstance } from "./types";
+
+export const createApp = () => {
+	return new OpenAPIHono<AppBindings>({
+		strict: false,
+		defaultHook: handleZodError,
+	});
+};
 
 export const initOpenAPI = (app: AppInstance) => {
 	// initialize the OpenAPI specification
@@ -22,12 +31,8 @@ export const initOpenAPI = (app: AppInstance) => {
 	app.get(
 		"/reference",
 		apiReference({
-			theme: "kepler",
+			theme: "deepSpace",
 			layout: "modern",
-			defaultHttpClient: {
-				targetKey: "javascript",
-				clientKey: "fetch",
-			},
 			spec: {
 				url: "/doc",
 			},

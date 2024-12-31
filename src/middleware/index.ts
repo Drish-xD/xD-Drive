@@ -1,24 +1,24 @@
 import { HTTP_STATUSES } from "@/constants";
-import type { AppInstance } from "@/helpers/create-app";
-import { type TError, handleError } from "@/helpers/errors";
-import { logger } from "@/helpers/logger";
+import { db } from "@/db";
+import { handleError } from "@/helpers/errors.helpers";
+import type { AppInstance, TError } from "@/helpers/types";
 import { cors } from "hono/cors";
 import { prettyJSON } from "hono/pretty-json";
 import { requestId } from "hono/request-id";
 import { trimTrailingSlash } from "hono/trailing-slash";
-import { db } from "./db";
+import { logger } from "./logger";
 
 export const middleware = (app: AppInstance) => {
-	app.use(cors());
-	app.use(trimTrailingSlash());
-	app.use(requestId());
-	app.use(prettyJSON());
-	app.use(logger());
-
 	app.use(async (ctx, next) => {
 		ctx.set("db", db);
 		await next();
 	});
+
+	app.use(trimTrailingSlash());
+	app.use(requestId());
+	app.use(logger());
+	app.use(cors());
+	app.use(prettyJSON());
 
 	app.notFound((ctx) =>
 		ctx.json<TError>({
@@ -30,6 +30,7 @@ export const middleware = (app: AppInstance) => {
 			},
 		}),
 	);
+
 	app.onError(handleError);
 
 	return app;
