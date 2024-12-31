@@ -8,6 +8,7 @@
 		"email": "hey@drishxd.dev",
 		"url": "https://drishxd.dev"
 	},
+	"type": "module",
 	"scripts": {
 		"dev": "bun run --hot src/index.ts",
 		"check": "biome check --fix",

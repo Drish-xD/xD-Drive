@@ -6,6 +6,7 @@ import { cors } from "hono/cors";
 import { prettyJSON } from "hono/pretty-json";
 import { requestId } from "hono/request-id";
 import { trimTrailingSlash } from "hono/trailing-slash";
+import { db } from "./db";
 
 export const middleware = (app: AppInstance) => {
 	app.use(cors());
@@ -13,6 +14,11 @@ export const middleware = (app: AppInstance) => {
 	app.use(requestId());
 	app.use(prettyJSON());
 	app.use(logger());
+
+	app.use(async (ctx, next) => {
+		ctx.set("db", db);
+		await next();
+	});
 
 	app.notFound((ctx) =>
 		ctx.json<TError>({
@@ -25,4 +31,6 @@ export const middleware = (app: AppInstance) => {
 		}),
 	);
 	app.onError(handleError);
+
+	return app;
 };
