@@ -56,16 +56,16 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 		);
 	}
 
-	const passwordHash = await bcrypt.compare(password, checkUser.passwordHash);
+	const isValid = await bcrypt.compare(password, checkUser.passwordHash);
 
-	if (!passwordHash) {
+	if (!isValid) {
 		return ctx.json(
 			{
 				message: MESSAGES.AUTH.INVALID_CREDENTIALS,
-				code: HTTP_STATUSES.UNAUTHORIZED.KEY,
+				code: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
 				stack: "auth.handlers.login#002",
 			},
-			HTTP_STATUSES.UNAUTHORIZED.CODE,
+			HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE,
 		);
 	}
 

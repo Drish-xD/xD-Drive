@@ -1,3 +1,4 @@
+import { HTTP_STATUSES } from "@/constants";
 import { insertUserSchema, loginUserSchema, selectUserSchema } from "@/db/schema";
 import { createErrorSchema, createJson, createMessageSchema, createZodIssueSchema } from "@/helpers/schema.helpers";
 import { createRoute, z } from "@hono/zod-openapi";
@@ -16,11 +17,11 @@ export const register = createRoute({
 		}),
 	},
 	responses: {
-		200: createJson({
+		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Register New User",
 			schema: selectUserSchema,
 		}),
-		409: createJson({
+		[HTTP_STATUSES.CONFLICT.CODE]: createJson({
 			description: "User already exists",
 			schema: createErrorSchema(
 				z.object({
@@ -64,21 +65,11 @@ export const login = createRoute({
 		}),
 	},
 	responses: {
-		200: createJson({
+		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Login User with credentials",
 			schema: createMessageSchema({
 				description: "Message to show user is logged in",
 				example: "User successfully logged in!",
-			}),
-		}),
-		401: createJson({
-			description: "Unauthorized User",
-			schema: createErrorSchema().openapi({
-				example: {
-					code: "UNAUTHORIZED",
-					message: "Unauthorized User",
-					stack: "auth.handlers.login#001",
-				},
 			}),
 		}),
 		404: createJson({
