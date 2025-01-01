@@ -11,7 +11,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bun run --hot src/index.ts",
-		"build": "bun build src/index.ts --outdir ./dist --target bun",
+		"build": "bun run scripts/build.ts",
+		"start": "bun run dist/index.js",
 		"check": "biome check --fix",
 		"drizzle:seed": "bun run ./src/db/seeds/index.ts",
 		"drizzle": "drizzle-kit",
@@ -33,7 +34,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@hono/zod-openapi": "^0.18.3",
-		"@types/bun": "latest",
+		"@types/bun": "^1.1.14",
 		"drizzle-kit": "^0.30.1",
 		"drizzle-seed": "^0.2.1",
 		"vercel": "^39.2.2"
