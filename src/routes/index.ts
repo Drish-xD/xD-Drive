@@ -8,9 +8,7 @@ import check from "./check/check.index";
 // import users from "./users";
 
 // Mount all the routes to the app
-const app = createApp()
-	.get("/", (ctx) => ctx.text("Hello, World!"))
-	.route("/", check);
+const app = createApp().route("/", check);
 // .route("/auth", auth)
 // .route("/files", files)
 // .route("/folders", folders)

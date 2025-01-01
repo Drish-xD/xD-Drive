@@ -10,7 +10,6 @@ const configSchema = z
 	.object({
 		APP_ENV: z.enum(["prod", "test", "dev"]).default("dev"),
 		IsProd: z.boolean().default(false),
-		PORT: z.coerce.number().default(3000),
 
 		// LOGGING
 		LOG_LEVEL: z.custom<LevelWithSilent>().default("info"),

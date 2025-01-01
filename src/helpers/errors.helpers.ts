@@ -4,8 +4,7 @@ import type { Context, Env, ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { StatusCode } from "hono/utils/http-status";
 import { ZodError } from "zod";
-import type { TError } from "./schema.helpers";
-import type { HTTP_STATUS } from "./types";
+import type { HTTP_STATUS, TError } from "./types";
 
 const HTTP_STATUSES_MAP = Object.entries(HTTP_STATUSES).reduce<Record<number, HTTP_STATUS>>((acc, [_, value]) => {
 	acc[value.CODE] = value;

@@ -38,4 +38,5 @@ export const healthCheck = createRoute({
 	},
 });
 
+export type THomeRoute = typeof home;
 export type THealthCheckRoute = typeof healthCheck;

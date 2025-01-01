@@ -1,6 +1,6 @@
 import { HTTP_STATUSES } from "@/constants";
 import type { AppRouteHandler } from "@/helpers/types";
-import type { THealthCheckRoute } from "./check.routes";
+import type { THealthCheckRoute, THomeRoute } from "./check.routes";
 
 export const healthCheck: AppRouteHandler<THealthCheckRoute> = async (ctx) => {
 	const { command, rowCount } = await ctx.get("db").execute("Select 1");
@@ -15,4 +15,8 @@ export const healthCheck: AppRouteHandler<THealthCheckRoute> = async (ctx) => {
 		},
 		HTTP_STATUSES.OK.CODE,
 	);
+};
+
+export const home: AppRouteHandler<THomeRoute> = async (ctx) => {
+	return ctx.text("Hello World!", HTTP_STATUSES.OK.CODE);
 };
