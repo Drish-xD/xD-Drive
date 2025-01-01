@@ -13,6 +13,7 @@
 		"types": ["node"],
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
-		"strict": true
+		"strict": true,
+		"noErrorTruncation": true
 	}
 }

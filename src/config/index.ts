@@ -20,6 +20,7 @@ const configSchema = z
 		// DATABASE
 		DATABASE_URL: z.string(),
 		DATABASE_LOGGING: strToBoolean,
+		SALT_ROUNDS: z.number().default(10),
 	})
 	.superRefine((data) => {
 		data.IsProd = data.APP_ENV === "prod";

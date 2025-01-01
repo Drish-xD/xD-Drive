@@ -23,6 +23,14 @@ export type HTTP_STATUS = {
 
 export type HTTP_STATUS_CODE = keyof typeof HTTP_STATUSES | (string & {});
 
-export type TError<T = unknown> = z.infer<ReturnType<typeof createErrorSchema>> & {
-	details?: T;
-};
+export type TValidationError = TError<
+	z.ZodObject<{
+		cause: z.ZodTypeAny;
+		errors: z.ZodArray<z.ZodType<z.ZodIssue>>;
+	}>
+>;
+
+export type TError<T extends ZodSchema = ZodSchema> = z.infer<ReturnType<typeof createErrorSchema<T>>>;
+
+// @ts-expect-error
+export type ZodSchema = z.ZodUnion | z.AnyZodObject | z.ZodArray<z.AnyZodObject>;

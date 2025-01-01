@@ -17,6 +17,11 @@ export const healthCheck: AppRouteHandler<THealthCheckRoute> = async (ctx) => {
 	);
 };
 
-export const home: AppRouteHandler<THomeRoute> = async (ctx) => {
-	return ctx.text("Hello World!", HTTP_STATUSES.OK.CODE);
+export const home: AppRouteHandler<THomeRoute> = (ctx) => {
+	return ctx.json(
+		{
+			message: "Hello World!",
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
 };

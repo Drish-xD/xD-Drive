@@ -1,6 +1,6 @@
 import { createApp } from "@/helpers/app.helpers";
+import auth from "./auth/auth.index";
 import check from "./check/check.index";
-// import auth from "./auth";
 // import files from "./files";
 // import folders from "./folders";
 // import groups from "./groups";
@@ -8,8 +8,7 @@ import check from "./check/check.index";
 // import users from "./users";
 
 // Mount all the routes to the app
-const app = createApp().route("/", check);
-// .route("/auth", auth)
+const app = createApp().route("/", check).route("/auth", auth);
 // .route("/files", files)
 // .route("/folders", folders)
 // .route("/shares", shares)

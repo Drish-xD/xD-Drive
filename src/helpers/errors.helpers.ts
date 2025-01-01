@@ -4,7 +4,7 @@ import type { Context, Env, ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { StatusCode } from "hono/utils/http-status";
 import { ZodError } from "zod";
-import type { HTTP_STATUS, TError } from "./types";
+import type { HTTP_STATUS, TError, TValidationError } from "./types";
 
 const HTTP_STATUSES_MAP = Object.entries(HTTP_STATUSES).reduce<Record<number, HTTP_STATUS>>((acc, [_, value]) => {
 	acc[value.CODE] = value;
@@ -17,7 +17,7 @@ export const handleError: ErrorHandler = (error, ctx) => {
 	const status = getStatusFromCode(ctx.res.status as StatusCode);
 
 	if (error instanceof ZodError) {
-		return ctx.json<TError>(
+		return ctx.json<TValidationError>(
 			{
 				code: status?.KEY,
 				message: error?.message,
@@ -58,12 +58,13 @@ export const handleError: ErrorHandler = (error, ctx) => {
 export const handleZodError = <E extends Env>(result: Parameters<Hook<any, Env, any, any>>["0"], ctx: Context) => {
 	if (!result.success) {
 		const error = result?.error;
-		return ctx.json<TError>(
+		return ctx.json<TValidationError>(
 			{
 				code: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
 				message: error?.message,
 				details: {
 					errors: error?.issues,
+					cause: error?.cause ?? {},
 				},
 				stack: error?.stack,
 			},

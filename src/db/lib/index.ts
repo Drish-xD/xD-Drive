@@ -8,6 +8,12 @@ export const defaultTimestamps = {
 	deletedAt: timestamp(),
 };
 
+export const omitTimestamps = {
+	updatedAt: true,
+	createdAt: true,
+	deletedAt: true,
+} as const;
+
 const { createInsertSchema, createSelectSchema, createUpdateSchema } = createSchemaFactory({ zodInstance: z });
 
 export type { infer as inferType } from "zod";

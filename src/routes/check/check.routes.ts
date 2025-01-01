@@ -1,5 +1,5 @@
 import { HTTP_STATUSES } from "@/constants";
-import { createErrorSchema, createJsonRes, createMessageSchema } from "@/helpers/schema.helpers";
+import { createErrorSchema, createJson, createMessageSchema } from "@/helpers/schema.helpers";
 import { createRoute, z } from "@hono/zod-openapi";
 
 export const home = createRoute({
@@ -7,9 +7,9 @@ export const home = createRoute({
 	method: "get",
 	tags: ["Internal"],
 	responses: {
-		200: createJsonRes({
+		200: createJson({
 			description: "Home route",
-			schema: z.string().openapi({ example: "Hello, World!" }),
+			schema: createMessageSchema({ example: "Hello World!" }),
 		}),
 	},
 });
@@ -19,7 +19,7 @@ export const healthCheck = createRoute({
 	method: "get",
 	tags: ["Internal"],
 	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJsonRes({
+		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Health check route to check the API and DB connection",
 			schema: createMessageSchema({
 				description: "API and DB connection is healthy",
@@ -31,7 +31,7 @@ export const healthCheck = createRoute({
 				}),
 			}),
 		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJsonRes({
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({
 			description: "Health check route to check the API and DB connection",
 			schema: createErrorSchema(),
 		}),
