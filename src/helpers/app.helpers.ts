@@ -1,4 +1,4 @@
-import { handleZodError } from "@/helpers/errors.helpers";
+import { handleZodError } from "@/middleware/on-error.middleware";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
 import packageJSON from "../../package.json";
@@ -13,10 +13,10 @@ export const createApp = () => {
 
 export const initOpenAPI = (app: AppInstance) => {
 	// initialize the OpenAPI specification
-	app.doc("/doc", {
-		openapi: "3.0.0",
+	app.doc31("/openapi", {
+		openapi: "3.1.0",
 		info: {
-			title: "Google Drive API",
+			title: packageJSON.description,
 			version: packageJSON.version,
 			description: packageJSON.description,
 			contact: packageJSON.author,
@@ -29,12 +29,12 @@ export const initOpenAPI = (app: AppInstance) => {
 
 	// initialize the API reference
 	app.get(
-		"/reference",
+		"/docs",
 		apiReference({
 			theme: "deepSpace",
 			layout: "modern",
 			spec: {
-				url: "/doc",
+				url: "/openapi",
 			},
 		}),
 	);

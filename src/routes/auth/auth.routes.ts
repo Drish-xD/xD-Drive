@@ -1,6 +1,6 @@
 import { HTTP_STATUSES } from "@/constants";
 import { insertUserSchema, loginUserSchema, selectUserSchema } from "@/db/schema";
-import { createErrorSchema, createJson, createMessageSchema, createZodIssueSchema } from "@/helpers/schema.helpers";
+import { createErrorSchema, createJson, createZodIssueSchema } from "@/helpers/schema.helpers";
 import { createRoute, z } from "@hono/zod-openapi";
 
 /**
@@ -23,11 +23,8 @@ export const register = createRoute({
 		}),
 		[HTTP_STATUSES.CONFLICT.CODE]: createJson({
 			description: "User already exists",
-			schema: createErrorSchema(
-				z.object({
-					userId: z.string().uuid().openapi({ example: "123e4567-e89b-12d3-a456-426614174000" }),
-				}),
-			).openapi({
+			schema: createErrorSchema({
+				detailsSchema: z.object({ userId: z.string().uuid() }),
 				example: {
 					code: "CONFLICT",
 					message: "User already exists",
@@ -38,11 +35,11 @@ export const register = createRoute({
 				},
 			}),
 		}),
-		422: createJson({
+		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createJson({
 			description: "Unprocessable Entity",
 			schema: createZodIssueSchema(),
 		}),
-		500: createJson({
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({
 			description: "Internal Server Error",
 			schema: createErrorSchema(),
 		}),
@@ -67,26 +64,26 @@ export const login = createRoute({
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Login User with credentials",
-			schema: createMessageSchema({
-				description: "Message to show user is logged in",
-				example: "User successfully logged in!",
+			schema: z.object({
+				message: z.string(),
 			}),
 		}),
-		404: createJson({
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createJson({
 			description: "User not found",
-			schema: createErrorSchema().openapi({
+			schema: createErrorSchema({
 				example: {
 					code: "NOT_FOUND",
 					message: "User not found",
 					stack: "auth.handlers.login#001",
+					details: "",
 				},
 			}),
 		}),
-		422: createJson({
+		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createJson({
 			description: "Unprocessable Entity",
 			schema: createZodIssueSchema(),
 		}),
-		500: createJson({
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({
 			description: "Internal Server Error",
 			schema: createErrorSchema(),
 		}),

@@ -1,13 +1,13 @@
 import { db } from "@/db";
-import { handleError } from "@/helpers/errors.helpers";
 import type { AppInstance } from "@/helpers/types";
 import { cors } from "hono/cors";
 import { prettyJSON } from "hono/pretty-json";
 import { requestId } from "hono/request-id";
 import { trimTrailingSlash } from "hono/trailing-slash";
-import { serveFavicon } from "./favicon";
-import { logger } from "./logger";
-import { notFound } from "./not-found";
+import { serveFavicon } from "./favicon.middleware";
+import { logger } from "./logger.middleware";
+import { notFound } from "./not-found.middleware";
+import { onError } from "./on-error.middleware";
 
 export const middleware = (app: AppInstance) => {
 	app.use(async (ctx, next) => {
@@ -24,7 +24,7 @@ export const middleware = (app: AppInstance) => {
 
 	app.notFound(notFound);
 
-	app.onError(handleError);
+	app.onError(onError);
 
 	return app;
 };
