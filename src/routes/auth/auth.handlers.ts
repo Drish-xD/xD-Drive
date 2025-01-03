@@ -4,8 +4,12 @@ import { users } from "@/db/schema";
 import type { AppBindings, AppRouteHandler } from "@/helpers/types";
 import type { RouteHandler } from "@hono/zod-openapi";
 import * as bcrypt from "bcryptjs";
+import { HTTPException } from "hono/http-exception";
 import type { TLoginRoute, TRegisterRoute } from "./auth.routes";
 
+/**
+ * Register User
+ */
 export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 	const { password, email, ...body } = ctx.req.valid("json");
 
@@ -15,17 +19,10 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 	});
 
 	if (checkUser) {
-		return ctx.json(
-			{
-				message: MESSAGES.AUTH.USER_ALREADY_EXISTS,
-				code: HTTP_STATUSES.CONFLICT.KEY,
-				details: {
-					userId: checkUser.id,
-				},
-				stack: "auth.handlers.register#001",
-			},
-			HTTP_STATUSES.CONFLICT.CODE,
-		);
+		throw new HTTPException(HTTP_STATUSES.CONFLICT.CODE, {
+			cause: "auth.handlers.register#001",
+			message: MESSAGES.AUTH.USER_ALREADY_EXISTS,
+		});
 	}
 
 	const hashedPassword = await bcrypt.hash(password, Config.SALT_ROUNDS);
@@ -38,6 +35,9 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 	return ctx.json(returningUser, HTTP_STATUSES.OK.CODE);
 };
 
+/**
+ * Login User
+ */
 export const login: RouteHandler<TLoginRoute, AppBindings> = async (ctx) => {
 	const { password, email } = ctx.req.valid("json");
 
@@ -47,36 +47,19 @@ export const login: RouteHandler<TLoginRoute, AppBindings> = async (ctx) => {
 	});
 
 	if (!checkUser) {
-		// throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-		// 	message: MESSAGES.AUTH.USER_NOT_FOUND,
-		// 	cause: "auth.handlers.login#001",
-		// });
-
-		return ctx.json(
-			{
-				message: MESSAGES.AUTH.USER_NOT_FOUND,
-				code: HTTP_STATUSES.NOT_FOUND.KEY,
-				stack: "auth.handlers.login#001",
-			},
-			HTTP_STATUSES.NOT_FOUND.CODE,
-		);
+		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
+			message: MESSAGES.AUTH.USER_NOT_FOUND,
+			cause: "auth.handlers.login#001",
+		});
 	}
 
 	const isValid = await bcrypt.compare(password, checkUser.passwordHash);
 
 	if (!isValid) {
-		return ctx.json(
-			{
-				message: MESSAGES.AUTH.INVALID_CREDENTIALS,
-				code: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
-				stack: "auth.handlers.login#002",
-				details: {
-					issues: [],
-					name: "ValidationError",
-				},
-			},
-			HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE,
-		);
+		throw new HTTPException(HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE, {
+			message: MESSAGES.AUTH.INVALID_CREDENTIALS,
+			cause: "auth.handlers.login#002",
+		});
 	}
 
 	return ctx.json(

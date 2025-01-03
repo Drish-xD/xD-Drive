@@ -1,10 +1,12 @@
 import type { HTTP_STATUSES } from "@/constants";
 import type { DB } from "@/db";
-import type { OpenAPIHono, RouteConfig, RouteHandler, z } from "@hono/zod-openapi";
+import { type OpenAPIHono, type RouteConfig, type RouteHandler, z } from "@hono/zod-openapi";
 import type { PinoLogger } from "hono-pino";
-import type { ZodTypeAny, ZodUnknown } from "zod";
+import type { StatusCode } from "hono/utils/http-status";
 import type { createErrorSchema } from "./schema.helpers";
+export type { StatusCode } from "hono/utils/http-status";
 
+// APP TYPES
 export interface AppBindings {
 	Variables: {
 		logger: PinoLogger;
@@ -16,44 +18,39 @@ export type AppInstance = OpenAPIHono<AppBindings>;
 
 export type AppRouteHandler<R extends RouteConfig> = RouteHandler<R, AppBindings>;
 
-export type HTTP_STATUS = {
-	readonly CODE: number;
-	readonly PHRASE: string;
-	readonly KEY: string;
-};
+// HTTP STATUS TYPES
+export type StatusCodeText = keyof typeof HTTP_STATUSES;
 
-export type HTTP_STATUS_CODE = keyof typeof HTTP_STATUSES | (string & {});
+// SCHEMA
+export const issueSchema = z.object({
+	issues: z.array(z.record(z.string(), z.string().array().optional())),
+	name: z.string(),
+});
 
-export type TValidationError = TError<
-	z.ZodObject<{
-		errors: z.ZodRecord<z.ZodString | z.ZodSymbol | z.ZodNumber, z.ZodArray<z.ZodString> | z.ZodUndefined>;
-	}>
->;
+export const BaseSchema = z.object({
+	status: z.custom<StatusCode>().openapi({ description: "Error status code to trace the error." }),
+	statusText: z.custom<StatusCodeText>().openapi({ description: "Status text based on the status code." }),
+});
 
-export type TError<T extends ZodSchema = ZodSchema> = z.infer<ReturnType<typeof createErrorSchema<T>>>;
+export const BaseErrorSchema = z.object({
+	code: z.string().openapi({ description: "Traceable error code. - [route_path]@[function]#[unique_code]" }),
+	message: z.string().openapi({ description: "Error message." }),
+	stack: z.string().optional().openapi({ description: "Stack trace of the error." }),
+});
 
-// @ts-expect-error
-export type ZodSchema = z.ZodUnion | z.AnyZodObject | z.ZodArray<z.AnyZodObject>;
+// SCHMEA TYPES
+export type TDescriptionExample = { description?: string; example?: string };
 
-/**
- * Error schema to return in case of an error.
- */
+export type TError<T extends z.AnyZodObject = typeof BaseErrorSchema> = z.infer<ReturnType<typeof createErrorSchema<T>>>;
 
-export type BaseErrorSchema<T extends ZodTypeAny> = z.ZodObject<{
-	code: z.ZodEnum<[HTTP_STATUS_CODE, ...HTTP_STATUS_CODE[]]>;
-	message: z.ZodString;
-	stack: z.ZodOptional<z.ZodString>;
-	details: T;
-}>;
+export type TValidationError = TError<typeof issueSchema>;
 
-export type TExample<T extends ZodTypeAny> = {
-	code?: HTTP_STATUS_CODE;
-	message?: string;
-	stack?: string;
-	details?: z.infer<T>;
-};
-
-export type CreateErrorSchema = {
-	<T extends ZodUnknown>(param?: { detailsSchema?: T; example?: TExample<T> }): BaseErrorSchema<T>;
-	<T extends ZodSchema>(param?: { detailsSchema?: T; example?: TExample<T> }): BaseErrorSchema<T>;
+export type TExample<T extends z.AnyZodObject> = {
+	status?: StatusCode;
+	statusText?: StatusCodeText;
+	error?: {
+		message?: string;
+		code?: string;
+		stack?: string;
+	} & z.infer<T>;
 };

@@ -1,8 +1,5 @@
-import { HTTP_STATUSES } from "@/constants";
 import { z } from "@hono/zod-openapi";
-import type { CreateErrorSchema, HTTP_STATUS_CODE, TExample } from "./types";
-
-type TDescriptionExample = { description?: string; example?: string };
+import { BaseErrorSchema, BaseSchema, type TDescriptionExample, type TExample } from "./types";
 
 /**
  * Create a message schema with description and example.
@@ -37,7 +34,7 @@ export const createIdSchema = ({ description = "The ID of the item", example = "
  * @param description - Description for the openAPI.
  * @returns JSON  schema.
  */
-export const createJson = <T extends z.ZodType<unknown>>({ description, schema, required }: { schema: T; description: string; required?: true }) => {
+export const createJson = <T extends z.ZodType<unknown>>({ description, schema }: { schema: T; description: string }) => {
 	return {
 		content: {
 			"application/json": {
@@ -48,72 +45,27 @@ export const createJson = <T extends z.ZodType<unknown>>({ description, schema, 
 	};
 };
 
-export const createErrorSchema: CreateErrorSchema = <T extends z.ZodType<unknown> = z.ZodUnknown>({
-	detailsSchema,
-	example,
-}: { detailsSchema?: T; example?: TExample<T> } = {}) => {
-	const details =
-		detailsSchema ??
-		z
-			.unknown()
-			.optional()
-			.openapi({
-				description: "Additional details about the error, like Zod validation issues.",
-				example: example?.details ?? "DB connection failed",
-			});
-
-	return z.object({
-		code: z.enum(Object.keys(HTTP_STATUSES) as unknown as readonly [HTTP_STATUS_CODE, ...HTTP_STATUS_CODE[]]).openapi({
-			description: "Error status code to trace the error.",
-			example: example?.code ?? "INTERNAL_SERVER_ERROR",
-		}),
-		message: z.string().openapi({
-			description: "Human-readable error message.",
-			example: example?.message ?? "Something went wrong. Please try again later.",
-		}),
-		stack: z
-			.string()
-			.optional()
-			.openapi({
-				description: "Stack trace of the error.",
-				example: example?.stack ?? "Error: Something went wrong.\n    at /path/to/file.ts:10:20",
-			}),
-		details,
-	});
-};
-
 /**
  * Create a JSON schema for error response.
+ * @param extendedError - Extended error schema.
+ * @param example - Example for the error schema.
+ * @returns JSON schema.
  */
-export const createZodIssueSchema = <T extends z.ZodSchema>(schema?: T) => {
-	const issueSchema = z.object({
-		issues: z.array(
-			z.object({
-				code: z.string(),
-				path: z.array(z.union([z.string(), z.number()])),
-				message: z.string().optional(),
-			}),
-		),
-		name: z.string(),
-	});
-
-	if (!schema) {
-		return createErrorSchema({
-			detailsSchema: issueSchema,
-			example: {
-				code: "UNPROCESSABLE_ENTITY",
-				message: "Validation failed",
-			},
-		});
-	}
-
-	const { error: example } = schema.safeParse(schema instanceof z.ZodArray ? [] : {});
-
-	return createErrorSchema({
-		detailsSchema: issueSchema.openapi({ example }),
+export const createErrorSchema = <T extends z.AnyZodObject = z.SomeZodObject>({ example, extendedError }: { extendedError?: T; example?: TExample<T> } = {}) => {
+	return BaseSchema.openapi({
 		example: {
-			code: "UNPROCESSABLE_ENTITY",
-			message: "Validation failed",
+			status: example?.status ?? 500,
+			statusText: example?.statusText ?? "INTERNAL_SERVER_ERROR",
 		},
+	}).extend({
+		error: BaseErrorSchema.openapi({
+			example: {
+				code: example?.error?.code ?? "auth.handlers@register#001",
+				message: example?.error?.message ?? "Something went wrong.",
+				stack: example?.error?.stack ?? "Error: Something went wrong.\n    at /path/to/file.ts:10:20",
+			},
+		}).merge(extendedError ?? z.object({}).strict()),
 	});
 };
+
+type t = z.infer<ReturnType<typeof createErrorSchema>>;

@@ -1,6 +1,6 @@
 import { HTTP_STATUSES } from "@/constants";
 import { insertUserSchema, loginUserSchema, selectUserSchema } from "@/db/schema";
-import { createErrorSchema, createJson, createZodIssueSchema } from "@/helpers/schema.helpers";
+import { createErrorSchema, createJson } from "@/helpers/schema.helpers";
 import { createRoute, z } from "@hono/zod-openapi";
 
 /**
@@ -23,21 +23,11 @@ export const register = createRoute({
 		}),
 		[HTTP_STATUSES.CONFLICT.CODE]: createJson({
 			description: "User already exists",
-			schema: createErrorSchema({
-				detailsSchema: z.object({ userId: z.string().uuid() }),
-				example: {
-					code: "CONFLICT",
-					message: "User already exists",
-					stack: "auth.handlers.register#001",
-					details: {
-						userId: "123e4567-e89b-12d3-a456-426614174000",
-					},
-				},
-			}),
+			schema: createErrorSchema(),
 		}),
 		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createJson({
 			description: "Unprocessable Entity",
-			schema: createZodIssueSchema(),
+			schema: createErrorSchema(),
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({
 			description: "Internal Server Error",
@@ -70,18 +60,11 @@ export const login = createRoute({
 		}),
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createJson({
 			description: "User not found",
-			schema: createErrorSchema({
-				example: {
-					code: "NOT_FOUND",
-					message: "User not found",
-					stack: "auth.handlers.login#001",
-					details: "",
-				},
-			}),
+			schema: createErrorSchema(),
 		}),
 		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createJson({
 			description: "Unprocessable Entity",
-			schema: createZodIssueSchema(),
+			schema: createErrorSchema(),
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({
 			description: "Internal Server Error",
@@ -91,23 +74,3 @@ export const login = createRoute({
 });
 
 export type TLoginRoute = typeof login;
-
-// /**
-//  * Refresh Token route
-//  */
-// export const refreshToken = createRoute({
-// 	path: "/refresh-token",
-// 	method: "post",
-// 	tags: ["Auth"],
-// 	responses: {
-// 		200: createJson({
-// 			description: "Refresh Token",
-// 			schema: createMessageSchema({
-// 				description: "Message to show token is refreshed",
-// 				example: "Token successfully refreshed!",
-// 			}),
-// 		}),
-// 	},
-// });
-
-// export type TRefreshTokenRoute = typeof refreshToken;
