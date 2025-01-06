@@ -1,5 +1,5 @@
 import { z } from "@hono/zod-openapi";
-import { BaseErrorSchema, BaseSchema, type TDescriptionExample, type TExample } from "./types";
+import type { StatusCode, StatusCodeText, TDescriptionExample, TExample } from "./types";
 
 /**
  * Create a message schema with description and example.
@@ -52,20 +52,18 @@ export const createJson = <T extends z.ZodType<unknown>>({ description, schema }
  * @returns JSON schema.
  */
 export const createErrorSchema = <T extends z.AnyZodObject = z.SomeZodObject>({ example, extendedError }: { extendedError?: T; example?: TExample<T> } = {}) => {
-	return BaseSchema.openapi({
-		example: {
-			status: example?.status ?? 500,
-			statusText: example?.statusText ?? "INTERNAL_SERVER_ERROR",
-		},
-	}).extend({
-		error: BaseErrorSchema.openapi({
-			example: {
-				code: example?.error?.code ?? "auth.handlers@register#001",
-				message: example?.error?.message ?? "Something went wrong.",
-				stack: example?.error?.stack ?? "Error: Something went wrong.\n    at /path/to/file.ts:10:20",
-			},
-		}).merge(extendedError ?? z.object({}).strict()),
+	return z.object({
+		status: z.custom<StatusCode>().openapi({ description: "Error status code to trace the error.", example: example?.status ?? 500 }),
+		statusText: z.custom<StatusCodeText>().openapi({ description: "Status text based on the status code.", example: example?.statusText ?? "INTERNAL_SERVER_ERROR" }),
+		error: z
+			.object({
+				code: z.string().openapi({ description: "Traceable error code. - [route_path]@[function]#[unique_code]", example: example?.error?.code ?? "folder.file@function#001" }),
+				message: z.string().openapi({ description: "Error message.", example: example?.error?.message ?? "Some error has occured." }),
+				stack: z
+					.string()
+					.optional()
+					.openapi({ description: "Stack trace of the error.", example: example?.error?.stack ?? "" }),
+			})
+			.merge(extendedError ?? z.object({}).strict()),
 	});
 };
-
-type t = z.infer<ReturnType<typeof createErrorSchema>>;

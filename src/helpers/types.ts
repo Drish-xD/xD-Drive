@@ -27,21 +27,11 @@ export const issueSchema = z.object({
 	name: z.string(),
 });
 
-export const BaseSchema = z.object({
-	status: z.custom<StatusCode>().openapi({ description: "Error status code to trace the error." }),
-	statusText: z.custom<StatusCodeText>().openapi({ description: "Status text based on the status code." }),
-});
-
-export const BaseErrorSchema = z.object({
-	code: z.string().openapi({ description: "Traceable error code. - [route_path]@[function]#[unique_code]" }),
-	message: z.string().openapi({ description: "Error message." }),
-	stack: z.string().optional().openapi({ description: "Stack trace of the error." }),
-});
-
 // SCHMEA TYPES
 export type TDescriptionExample = { description?: string; example?: string };
 
-export type TError<T extends z.AnyZodObject = typeof BaseErrorSchema> = z.infer<ReturnType<typeof createErrorSchema<T>>>;
+const EmptyObject = z.object({});
+export type TError<T extends z.AnyZodObject = typeof EmptyObject> = z.infer<ReturnType<typeof createErrorSchema<T>>>;
 
 export type TValidationError = TError<typeof issueSchema>;
 
