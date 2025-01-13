@@ -5,6 +5,7 @@ import { createApp, initOpenAPI } from "./helpers/app.helpers";
 const app = createApp();
 
 middleware(app);
+
 initOpenAPI(app);
 
 app.route("/", routes);

@@ -64,7 +64,7 @@ export const login: RouteHandler<TLoginRoute, AppBindings> = async (ctx) => {
 
 	return ctx.json(
 		{
-			message: "User successfully logged in!",
+			message: MESSAGES.AUTH.LOGGED_IN,
 		},
 		HTTP_STATUSES.OK.CODE,
 	);

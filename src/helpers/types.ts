@@ -22,25 +22,36 @@ export type AppRouteHandler<R extends RouteConfig> = RouteHandler<R, AppBindings
 export type StatusCodeText = keyof typeof HTTP_STATUSES;
 
 // SCHEMA
-export const issueSchema = z.object({
-	issues: z.array(z.record(z.string(), z.string().array().optional())),
-	name: z.string(),
+const zodIssueSchema = z.object({
+	issues: z.record(z.string(), z.string().array().optional()).openapi({ example: { field_1: ["issue_1", "issue_2"] } }),
+	name: z.string().openapi({ example: "ZodErrors" }),
 });
 
 // SCHMEA TYPES
-export type TDescriptionExample = { description?: string; example?: string };
+export type TDescriptionExample = {
+	description?: string;
+	example?: string;
+};
 
 const EmptyObject = z.object({});
+
 export type TError<T extends z.AnyZodObject = typeof EmptyObject> = z.infer<ReturnType<typeof createErrorSchema<T>>>;
 
-export type TValidationError = TError<typeof issueSchema>;
+export type TValidationError = TError<typeof zodIssueSchema>;
 
-export type TExample<T extends z.AnyZodObject> = {
+// Base types without circular references
+type BaseErrorFields = {
+	message?: string;
+	code?: string;
+	stack?: string;
+};
+
+type BaseExample = {
 	status?: StatusCode;
 	statusText?: StatusCodeText;
-	error?: {
-		message?: string;
-		code?: string;
-		stack?: string;
-	} & z.infer<T>;
+	error?: BaseErrorFields;
+};
+
+export type TExample<T extends z.ZodType = z.ZodType> = BaseExample & {
+	error?: BaseErrorFields & Partial<z.infer<T>>;
 };
