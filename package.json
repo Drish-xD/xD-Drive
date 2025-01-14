@@ -23,6 +23,7 @@
 		"@neondatabase/serverless": "^0.10.4",
 		"@scalar/hono-api-reference": "^0.5.165",
 		"bcryptjs": "^2.4.3",
+		"date-fns": "^4.1.0",
 		"drizzle-orm": "^0.38.3",
 		"drizzle-zod": "^0.6.1",
 		"hono": "^4.6.14",

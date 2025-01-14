@@ -1,10 +1,13 @@
 import { Config } from "@/config";
-import { HTTP_STATUSES, MESSAGES } from "@/constants";
+import { COOKIES, HTTP_STATUSES, MESSAGES } from "@/constants";
 import { users } from "@/db/schema";
 import type { AppBindings, AppRouteHandler } from "@/helpers/types";
 import type { RouteHandler } from "@hono/zod-openapi";
 import * as bcrypt from "bcryptjs";
+import { addWeeks, endOfWeek, startOfToday } from "date-fns";
+import { setSignedCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
+import { sign } from "hono/jwt";
 import type { TLoginRoute, TRegisterRoute } from "./auth.routes";
 
 /**
@@ -43,7 +46,7 @@ export const login: RouteHandler<TLoginRoute, AppBindings> = async (ctx) => {
 
 	const checkUser = await ctx.var.db.query.users.findFirst({
 		where: (users, fn) => fn.eq(users.email, email),
-		columns: { passwordHash: true },
+		columns: { passwordHash: true, id: true },
 	});
 
 	if (!checkUser) {
@@ -61,6 +64,20 @@ export const login: RouteHandler<TLoginRoute, AppBindings> = async (ctx) => {
 			cause: "auth.handlers.login#002",
 		});
 	}
+
+	const jwtToken = await sign({ id: checkUser?.id }, Config.JWT_SECRET);
+	
+	ctx.var.logger.info(`User ${checkUser.id} logged in with token: ${jwtToken}`);
+
+	await setSignedCookie(ctx, COOKIES.ACCESS_TOKEN, jwtToken, Config.COOKIE_SECRET, {
+		path: "/",
+		// secure: true,
+		// domain: Config.IsProd ? "" : "localhost",
+		// httpOnly: Config.IsProd ? true : false,
+		maxAge: 1000, // 1 second
+		expires: addWeeks(startOfToday(), 1),
+		sameSite: "Strict",
+	});
 
 	return ctx.json(
 		{
