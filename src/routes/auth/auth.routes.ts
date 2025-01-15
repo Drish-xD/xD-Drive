@@ -70,3 +70,68 @@ export const login = createRoute({
 });
 
 export type TLoginRoute = typeof login;
+
+/**
+ * Refresh Token route
+ */
+export const refreshToken = createRoute({
+	path: "/refresh-token",
+	method: "post",
+	tags: ["Auth"],
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Refresh Token(s)",
+			schema: createMessageSchema({
+				example: MESSAGES.AUTH.REFRESHED_TOKEN,
+			}),
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.AUTH.USER_NOT_FOUND,
+		}),
+		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
+			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TRefreshTokenRoute = typeof refreshToken;
+
+/**
+ * Logout User route
+ */
+export const logout = createRoute({
+	path: "/logout",
+	method: "delete",
+	tags: ["Auth"],
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Logout User",
+			schema: createMessageSchema({
+				example: MESSAGES.AUTH.LOGGED_OUT,
+			}),
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TLogoutRoute = typeof logout;
+
+export const forgotPassword = createRoute({
+	path: "/forgot-password",
+	method: "post",
+	tags: ["Auth"],
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Forgot Password",
+			schema: createMessageSchema({
+				example: MESSAGES.AUTH.LOGGED_OUT,
+			}),
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TForgotPasswordRoute = typeof forgotPassword;

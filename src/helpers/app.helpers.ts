@@ -13,7 +13,7 @@ export const createApp = () => {
 
 export const initOpenAPI = (app: AppInstance) => {
 	// initialize the OpenAPI specification
-	app.doc31("/openapi", {
+	app.doc31("/docs/openapi", {
 		openapi: "3.1.0",
 		info: {
 			title: packageJSON.description,
@@ -34,7 +34,7 @@ export const initOpenAPI = (app: AppInstance) => {
 			theme: "deepSpace",
 			layout: "modern",
 			spec: {
-				url: "/openapi",
+				url: "/docs/openapi",
 			},
 		}),
 	);

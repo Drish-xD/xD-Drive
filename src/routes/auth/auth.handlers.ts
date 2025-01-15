@@ -1,14 +1,12 @@
-import { Config } from "@/config";
+import { CONFIG } from "@/config";
 import { COOKIES, HTTP_STATUSES, MESSAGES } from "@/constants";
 import { users } from "@/db/schema";
-import type { AppBindings, AppRouteHandler } from "@/helpers/types";
-import type { RouteHandler } from "@hono/zod-openapi";
+import type { AppRouteHandler } from "@/helpers/types";
 import * as bcrypt from "bcryptjs";
-import { addWeeks, endOfWeek, startOfToday } from "date-fns";
-import { setSignedCookie } from "hono/cookie";
+import { deleteCookie, setSignedCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
-import { sign } from "hono/jwt";
-import type { TLoginRoute, TRegisterRoute } from "./auth.routes";
+import { generateJwtTokens, setCookieOptions } from "./auth.helpers";
+import type { TLoginRoute, TLogoutRoute, TRefreshTokenRoute, TRegisterRoute } from "./auth.routes";
 
 /**
  * Register User
@@ -28,7 +26,7 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 		});
 	}
 
-	const hashedPassword = await bcrypt.hash(password, Config.SALT_ROUNDS);
+	const hashedPassword = await bcrypt.hash(password, CONFIG.SALT_ROUNDS);
 
 	const [{ passwordHash, ...returningUser }] = await ctx.var.db
 		.insert(users)
@@ -41,7 +39,7 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 /**
  * Login User
  */
-export const login: RouteHandler<TLoginRoute, AppBindings> = async (ctx) => {
+export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 	const { password, email } = ctx.req.valid("json");
 
 	const checkUser = await ctx.var.db.query.users.findFirst({
@@ -65,19 +63,10 @@ export const login: RouteHandler<TLoginRoute, AppBindings> = async (ctx) => {
 		});
 	}
 
-	const jwtToken = await sign({ id: checkUser?.id }, Config.JWT_SECRET);
-	
-	ctx.var.logger.info(`User ${checkUser.id} logged in with token: ${jwtToken}`);
+	const { accessToken, refreshToken } = await generateJwtTokens(checkUser.id);
 
-	await setSignedCookie(ctx, COOKIES.ACCESS_TOKEN, jwtToken, Config.COOKIE_SECRET, {
-		path: "/",
-		// secure: true,
-		// domain: Config.IsProd ? "" : "localhost",
-		// httpOnly: Config.IsProd ? true : false,
-		maxAge: 1000, // 1 second
-		expires: addWeeks(startOfToday(), 1),
-		sameSite: "Strict",
-	});
+	await setSignedCookie(ctx, COOKIES.ACCESS_TOKEN, accessToken, CONFIG.COOKIE_SECRET, setCookieOptions.accessToken);
+	await setSignedCookie(ctx, COOKIES.REFRESH_TOKEN, refreshToken, CONFIG.COOKIE_SECRET, setCookieOptions.refreshToken);
 
 	return ctx.json(
 		{
@@ -87,22 +76,47 @@ export const login: RouteHandler<TLoginRoute, AppBindings> = async (ctx) => {
 	);
 };
 
-// app.post("/login", async (ctx) => {
-// 	return ctx.text("login");
-// });
+export const refreshToken: AppRouteHandler<TRefreshTokenRoute> = async (ctx) => {
+	const userId = ctx.get("jwtPayload")?.id;
 
-// app.post("/refresh-token", async (ctx) => {
-// 	return ctx.text("refresh-token");
-// });
+	const { accessToken, refreshToken } = await generateJwtTokens(userId);
+	await setSignedCookie(ctx, COOKIES.ACCESS_TOKEN, accessToken, CONFIG.COOKIE_SECRET, setCookieOptions.accessToken);
+	await setSignedCookie(ctx, COOKIES.REFRESH_TOKEN, refreshToken, CONFIG.COOKIE_SECRET, setCookieOptions.refreshToken);
 
-// app.post("/logout", async (ctx) => {
-// 	return ctx.text("logout");
-// });
+	return ctx.json(
+		{
+			message: MESSAGES.AUTH.REFRESHED_TOKEN,
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
+};
 
-// app.post("/forgot-password", async (ctx) => {
-// 	return ctx.text("forgot-password");
-// });
+export const logout: AppRouteHandler<TLogoutRoute> = (ctx) => {
+	deleteCookie(ctx, COOKIES.ACCESS_TOKEN);
+	deleteCookie(ctx, COOKIES.REFRESH_TOKEN);
 
-// app.post("/reset-password", async (ctx) => {
-// 	return ctx.text("reset-password");
-// });
+	return ctx.json(
+		{
+			message: MESSAGES.AUTH.LOGGED_OUT,
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
+};
+
+export const forgotPassword: AppRouteHandler<TLogoutRoute> = (ctx) => {
+	return ctx.json(
+		{
+			message: MESSAGES.AUTH.LOGGED_OUT,
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
+};
+
+export const resetPassword: AppRouteHandler<TLogoutRoute> = (ctx) => {
+	return ctx.json(
+		{
+			message: MESSAGES.AUTH.LOGGED_OUT,
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
+};

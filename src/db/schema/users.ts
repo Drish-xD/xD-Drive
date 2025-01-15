@@ -39,7 +39,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 /**
  * Zod Schema
  */
-const example = {
+export const userExample = {
 	id: "123e4567-e89b-12d3-a456-426614174000",
 	fullName: "John Doe",
 	displayName: "john_doe",
@@ -59,15 +59,15 @@ export const selectUserSchema = createSelectSchema(users)
 	})
 	.openapi("User", {
 		example: {
-			id: example.id,
-			fullName: example.fullName,
-			displayName: example.displayName,
-			email: example.email,
-			emailVerifiedAt: example.emailVerifiedAt,
-			status: example.status,
-			createdAt: example.createdAt,
-			updatedAt: example.updatedAt,
-			deletedAt: example.deletedAt,
+			id: userExample.id,
+			fullName: userExample.fullName,
+			displayName: userExample.displayName,
+			email: userExample.email,
+			emailVerifiedAt: userExample.emailVerifiedAt,
+			status: userExample.status,
+			createdAt: userExample.createdAt,
+			updatedAt: userExample.updatedAt,
+			deletedAt: userExample.deletedAt,
 		},
 	});
 
@@ -84,12 +84,12 @@ export const insertUserSchema = createInsertSchema(users, {
 	})
 	.openapi("InsertUser", {
 		example: {
-			displayName: example.displayName,
-			email: example.email,
-			password: example.password,
-			fullName: example.fullName,
-			emailVerifiedAt: example.emailVerifiedAt,
-			status: example.status,
+			displayName: userExample.displayName,
+			email: userExample.email,
+			password: userExample.password,
+			fullName: userExample.fullName,
+			emailVerifiedAt: userExample.emailVerifiedAt,
+			status: userExample.status,
 		},
 	});
 
@@ -104,11 +104,11 @@ export const updateUserSchema = createUpdateSchema(users, {
 	.partial()
 	.openapi("UpdateUser", {
 		example: {
-			displayName: example.displayName,
-			fullName: example.fullName,
-			email: example.email,
-			emailVerifiedAt: example.emailVerifiedAt,
-			status: example.status,
+			displayName: userExample.displayName,
+			fullName: userExample.fullName,
+			email: userExample.email,
+			emailVerifiedAt: userExample.emailVerifiedAt,
+			status: userExample.status,
 		},
 	});
 
@@ -119,8 +119,8 @@ export const loginUserSchema = insertUserSchema
 	})
 	.openapi("LoginUser", {
 		example: {
-			email: example.email,
-			password: example.password,
+			email: userExample.email,
+			password: userExample.password,
 		},
 	});
 

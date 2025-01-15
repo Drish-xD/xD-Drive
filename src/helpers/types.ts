@@ -5,12 +5,18 @@ import type { PinoLogger } from "hono-pino";
 import type { StatusCode } from "hono/utils/http-status";
 import type { createErrorSchema } from "./schema.helpers";
 export type { StatusCode } from "hono/utils/http-status";
+import type { TUser } from "@/db/schema";
+import type { JWTPayload } from "hono/utils/jwt/types";
+
+export type TJWTPayload = JWTPayload & { id: string };
 
 // APP TYPES
 export interface AppBindings {
 	Variables: {
 		logger: PinoLogger;
 		db: DB;
+		jwtPayload: TJWTPayload;
+		userData: TUser | null;
 	};
 }
 
