@@ -1,3 +1,5 @@
+import { HTTP_STATUSES } from "@/constants";
+import { getStatusKeyByCode } from "@/helpers/other.helpers";
 import type { StatusCode, StatusCodeText, TError, TValidationError } from "@/helpers/types";
 import type { Hook } from "@hono/zod-openapi";
 import type { Context, Env, ErrorHandler } from "hono";
@@ -5,16 +7,13 @@ import { HTTPException } from "hono/http-exception";
 import { ZodError } from "zod";
 
 export const onError: ErrorHandler = (error, ctx) => {
-	const status = ctx.res.status as StatusCode;
-	const statusText = ctx.res.statusText as StatusCodeText;
-
 	if (error instanceof ZodError) {
 		const { flatten, name, message, stack, cause } = error;
 
 		return ctx.json<TValidationError>(
 			{
-				status,
-				statusText,
+				status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE,
+				statusText: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
 				error: {
 					code: String(cause ?? "on-error.middleware@onError#001"),
 					stack,
@@ -23,36 +22,37 @@ export const onError: ErrorHandler = (error, ctx) => {
 					issues: flatten().fieldErrors,
 				},
 			},
-			{ status },
+			{ status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE },
 		);
 	}
 
 	if (error instanceof HTTPException) {
+		console.log(error);
 		return ctx.json<TError>(
 			{
-				status,
-				statusText,
+				status: error.status,
+				statusText: getStatusKeyByCode(error.status),
 				error: {
 					message: error?.message,
 					code: String(error?.cause ?? "on-error.middleware@onError#002"),
 					stack: error?.stack,
 				},
 			},
-			{ status },
+			{ status: error.status },
 		);
 	}
 
 	return ctx.json<TError>(
 		{
-			status,
-			statusText,
+			status: HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE,
+			statusText: HTTP_STATUSES.INTERNAL_SERVER_ERROR.KEY,
 			error: {
 				code: String(error?.cause ?? "on-error.middleware@onError#003"),
 				message: error?.message,
 				stack: error?.stack,
 			},
 		},
-		{ status },
+		{ status: HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE },
 	);
 };
 
