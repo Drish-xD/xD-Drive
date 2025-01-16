@@ -23,7 +23,7 @@ const GIST_URL = "https://raw.githubusercontent.com/prettymuchbryce/http-status-
 const FILE_LOCATIONS = "src/constants/http-status-codes.ts";
 
 const run = async () => {
-	console.log(`Updating ${FILE_LOCATIONS}`);
+	console.info(`Updating ${FILE_LOCATIONS}`);
 
 	const project = new Project({ tsConfigFilePath: "tsconfig.json" });
 
@@ -65,7 +65,7 @@ const run = async () => {
 
 	await project.save();
 	await execSync(`bun check ${FILE_LOCATIONS}`);
-	console.log("Successfully generated");
+	console.info("Successfully generated");
 };
 
 run();

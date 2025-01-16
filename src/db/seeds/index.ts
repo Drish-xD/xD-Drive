@@ -22,19 +22,19 @@ const main = async () => {
 
 		switch (action.toLowerCase()) {
 			case "r":
-				console.log("Starting reset...");
+				console.info("Starting reset...");
 				await reset(db, schema);
-				console.log("Database reset complete!");
+				console.info("Database reset complete!");
 				break;
 
 			case "s":
-				console.log("Starting seeding...");
+				console.info("Starting seeding...");
 				await seedDb();
-				console.log("Database seeding complete!");
+				console.info("Database seeding complete!");
 				break;
 
 			default:
-				console.log("Invalid option. Please choose 'r' for reset or 's' for seed.");
+				console.info("Invalid option. Please choose 'r' for reset or 's' for seed.");
 		}
 	} catch (error) {
 		console.error("An error occurred : ", error);

@@ -15,8 +15,8 @@ export interface AppBindings {
 	Variables: {
 		logger: PinoLogger;
 		db: DB;
-		jwtPayload: TJWTPayload;
-		userData: TUser | null;
+		jwtPayload: TJWTPayload | undefined;
+		userData: TUser;
 	};
 }
 

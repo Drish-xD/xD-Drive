@@ -27,7 +27,6 @@ export const onError: ErrorHandler = (error, ctx) => {
 	}
 
 	if (error instanceof HTTPException) {
-		console.log(error);
 		return ctx.json<TError>(
 			{
 				status: error.status,

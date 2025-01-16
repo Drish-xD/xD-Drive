@@ -1,12 +1,13 @@
-import { CONFIG } from "@/config";
-import { COOKIES, HTTP_STATUSES, MESSAGES } from "@/constants";
+import { CONFIG, COOKIES } from "@/config";
+import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { users } from "@/db/schema";
 import type { AppRouteHandler } from "@/helpers/types";
 import * as bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 import { deleteCookie, setSignedCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import { generateJwtTokens, setCookieOptions } from "./auth.helpers";
-import type { TLoginRoute, TLogoutRoute, TRefreshTokenRoute, TRegisterRoute } from "./auth.routes";
+import type { TForgotPasswordRoute, TLoginRoute, TLogoutRoute, TRefreshTokenRoute, TRegisterRoute, TResetPasswordRoute, TVerifyEmailRoute } from "./auth.routes";
 
 /**
  * Register User
@@ -77,9 +78,17 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 };
 
 export const refreshToken: AppRouteHandler<TRefreshTokenRoute> = async (ctx) => {
-	const userId = ctx.get("jwtPayload")?.id;
+	const payload = ctx.get("jwtPayload");
 
-	const { accessToken, refreshToken } = await generateJwtTokens(userId);
+	if (!payload?.id) {
+		throw new HTTPException(HTTP_STATUSES.UNAUTHORIZED.CODE, {
+			message: MESSAGES.AUTH.INVALID_REFRESH_TOKEN,
+			cause: "auth.handlers.refreshToken#001",
+		});
+	}
+
+	const { accessToken, refreshToken } = await generateJwtTokens(payload?.id);
+
 	await setSignedCookie(ctx, COOKIES.ACCESS_TOKEN, accessToken, CONFIG.COOKIE_SECRET, setCookieOptions.accessToken);
 	await setSignedCookie(ctx, COOKIES.REFRESH_TOKEN, refreshToken, CONFIG.COOKIE_SECRET, setCookieOptions.refreshToken);
 
@@ -103,19 +112,40 @@ export const logout: AppRouteHandler<TLogoutRoute> = (ctx) => {
 	);
 };
 
-export const forgotPassword: AppRouteHandler<TLogoutRoute> = (ctx) => {
+export const verifyEmail: AppRouteHandler<TVerifyEmailRoute> = async (ctx) => {
+	const userData = ctx.get("userData");
+	if (userData?.emailVerifiedAt) {
+		throw new HTTPException(HTTP_STATUSES.CONFLICT.CODE, {
+			message: MESSAGES.AUTH.USER_ALREADY_VERIFIED,
+			cause: "auth.handlers.verifyEmail#001",
+		});
+	}
+
+	await ctx.var.db.update(users).set({ emailVerifiedAt: new Date() }).where(eq(users.id, userData.id));
+
 	return ctx.json(
 		{
-			message: MESSAGES.AUTH.LOGGED_OUT,
+			message: MESSAGES.AUTH.EMAIL_VERIFIED,
 		},
 		HTTP_STATUSES.OK.CODE,
 	);
 };
 
-export const resetPassword: AppRouteHandler<TLogoutRoute> = (ctx) => {
+// TODO: TO BE IMPLEMENTED
+export const forgotPassword: AppRouteHandler<TForgotPasswordRoute> = (ctx) => {
 	return ctx.json(
 		{
-			message: MESSAGES.AUTH.LOGGED_OUT,
+			message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
+};
+
+// TODO: TO BE IMPLEMENTED
+export const resetPassword: AppRouteHandler<TResetPasswordRoute> = (ctx) => {
+	return ctx.json(
+		{
+			message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
 		},
 		HTTP_STATUSES.OK.CODE,
 	);

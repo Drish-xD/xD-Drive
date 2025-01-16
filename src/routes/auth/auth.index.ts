@@ -6,6 +6,9 @@ const app = createApp()
 	.openapi(routes.register, handlers.register)
 	.openapi(routes.login, handlers.login)
 	.openapi(routes.refreshToken, handlers.refreshToken)
-	.openapi(routes.logout, handlers.logout);
+	.openapi(routes.logout, handlers.logout)
+	.openapi(routes.verifyEmail, handlers.verifyEmail)
+	.openapi(routes.forgotPassword, handlers.forgotPassword)
+	.openapi(routes.resetPassword, handlers.resetPassword);
 
 export default app;
