@@ -23,9 +23,9 @@ export const createUuidSchema = ({ description = "The UUID of the item", example
 /**
  * Create a ID schema with description and example.
  */
-export const createIdSchema = ({ description = "The ID of the item", example = "1" }: TDescriptionExample) => {
+export const createIdSchema = ({ description = "The ID of the item", example = 1 }: TDescriptionExample<number> = {}) => {
 	return z.object({
-		id: z.string().openapi({ description, example }),
+		id: z.coerce.number().openapi({ description, example }),
 	});
 };
 
@@ -131,5 +131,41 @@ export const createErrorJson = <T extends z.AnyZodObject = z.SomeZodObject, R ex
 				},
 			},
 		}),
+	});
+};
+
+const orderBy = z.object({
+	id: z.string(),
+	desc: z.boolean(),
+}).array;
+
+const filters = z.object({
+	id: z.string(),
+	value: z.string(),
+}).array;
+
+export const createPaginationParams = () => {
+	return z.object({
+		page: z.coerce.number().min(1).default(1).optional().openapi({ description: "Page number", example: 1 }),
+		limit: z.coerce.number().min(1).max(200).default(10).optional().openapi({ description: "Items per page", example: 10 }),
+		order: orderBy()
+			.optional()
+			.openapi({ description: "Order of the items", example: [{ id: "createdAt", desc: true }] }),
+		filters: filters()
+			.optional()
+			.openapi({ description: "Filters for the items", example: [{ id: "column", value: "value" }] }),
+	});
+};
+
+const meta = z.object({
+	total: z.coerce.number().min(0).openapi({ description: "Total number of items", example: 10 }),
+	page: z.coerce.number().min(1).default(1).openapi({ description: "Page number", example: 1 }),
+	limit: z.coerce.number().min(1).max(200).default(10).openapi({ description: "Items per page", example: 10 }),
+});
+
+export const createPaginationResponse = <T extends z.AnyZodObject>(dataSchema: T) => {
+	return z.object({
+		meta: meta.openapi({ description: "Meta data", example: { total: 10, page: 1, limit: 10 } }),
+		data: dataSchema.array().openapi({ description: "Data", example: [] }),
 	});
 };

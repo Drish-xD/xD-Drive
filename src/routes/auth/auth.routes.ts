@@ -119,6 +119,9 @@ export const logout = createRoute({
 
 export type TLogoutRoute = typeof logout;
 
+/**
+ * Verify User Email route
+ */
 export const verifyEmail = createRoute({
 	path: "/verify-email",
 	method: "get",
@@ -144,6 +147,9 @@ export const verifyEmail = createRoute({
 
 export type TVerifyEmailRoute = typeof verifyEmail;
 
+/**
+ * Forgot Password route
+ */
 export const forgotPassword = createRoute({
 	path: "/forgot-password",
 	method: "post",
@@ -161,6 +167,9 @@ export const forgotPassword = createRoute({
 
 export type TForgotPasswordRoute = typeof forgotPassword;
 
+/**
+ * Reset Password route
+ */
 export const resetPassword = createRoute({
 	path: "/reset-password",
 	method: "post",
