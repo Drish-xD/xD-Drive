@@ -33,3 +33,8 @@ export const AUTH = {
 	// PASSWORD_RESET_EMAIL_FAILED: "Password reset email could not be sent",
 	// PASSWORD_SAME_AS_OLD: "New password must be different from the old password",
 } as const;
+
+export const USER = {
+	DELETED_SUCCESS: "User deleted successfully!",
+	UPDATED_SUCCESS: "User updated successfully!",
+} as const;

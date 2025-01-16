@@ -77,6 +77,9 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 	);
 };
 
+/**
+ * Refresh Token
+ */
 export const refreshToken: AppRouteHandler<TRefreshTokenRoute> = async (ctx) => {
 	const payload = ctx.get("jwtPayload");
 
@@ -100,6 +103,9 @@ export const refreshToken: AppRouteHandler<TRefreshTokenRoute> = async (ctx) => 
 	);
 };
 
+/**
+ * Logout User
+ */
 export const logout: AppRouteHandler<TLogoutRoute> = (ctx) => {
 	deleteCookie(ctx, COOKIES.ACCESS_TOKEN);
 	deleteCookie(ctx, COOKIES.REFRESH_TOKEN);
@@ -112,6 +118,9 @@ export const logout: AppRouteHandler<TLogoutRoute> = (ctx) => {
 	);
 };
 
+/**
+ * Verify User Email
+ */
 export const verifyEmail: AppRouteHandler<TVerifyEmailRoute> = async (ctx) => {
 	const userData = ctx.get("userData");
 	if (userData?.emailVerifiedAt) {
@@ -131,8 +140,11 @@ export const verifyEmail: AppRouteHandler<TVerifyEmailRoute> = async (ctx) => {
 	);
 };
 
-// TODO: TO BE IMPLEMENTED
+/**
+ * Forgot User Password
+ */
 export const forgotPassword: AppRouteHandler<TForgotPasswordRoute> = (ctx) => {
+	// TODO: TO BE IMPLEMENTED
 	return ctx.json(
 		{
 			message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
@@ -141,8 +153,11 @@ export const forgotPassword: AppRouteHandler<TForgotPasswordRoute> = (ctx) => {
 	);
 };
 
-// TODO: TO BE IMPLEMENTED
+/**
+ * Reset User Password
+ */
 export const resetPassword: AppRouteHandler<TResetPasswordRoute> = (ctx) => {
+	// TODO: TO BE IMPLEMENTED
 	return ctx.json(
 		{
 			message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,

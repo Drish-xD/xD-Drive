@@ -34,9 +34,9 @@ const zodIssueSchema = z.object({
 });
 
 // SCHMEA TYPES
-export type TDescriptionExample = {
+export type TDescriptionExample<T = string> = {
 	description?: string;
-	example?: string;
+	example?: T;
 };
 
 const EmptyObject = z.object({});
