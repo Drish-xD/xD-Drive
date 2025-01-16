@@ -1,6 +1,6 @@
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
-import { selectUserSchema } from "@/db/schema";
-import { createErrorJson, createJson } from "@/helpers/schema.helpers";
+import { selectUserSchema, updateUserSchema } from "@/db/schema";
+import { createErrorJson, createIdSchema, createJson, createMessageSchema, createPaginationParams, createPaginationResponse } from "@/helpers/schema.helpers";
 import { createRoute } from "@hono/zod-openapi";
 
 /**
@@ -12,8 +12,37 @@ export const me = createRoute({
 	tags: ["Users"],
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "",
+			description: "Get current user details",
 			schema: selectUserSchema,
+		}),
+		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNAUTHORIZED,
+			message: MESSAGES.AUTH.UNAUTHORIZED,
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.AUTH.USER_NOT_FOUND,
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TUsersMeRoute = typeof me;
+
+/**
+ * Users Listing route
+ */
+export const users = createRoute({
+	path: "/users",
+	method: "get",
+	tags: ["Users"],
+	request: {
+		params: createPaginationParams(),
+	},
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Get all users",
+			schema: createPaginationResponse(selectUserSchema),
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
 			status: HTTP_STATUSES.UNAUTHORIZED,
@@ -23,4 +52,110 @@ export const me = createRoute({
 	},
 });
 
-export type TUsersMeRoute = typeof me;
+export type TUsersRoute = typeof users;
+
+/**
+ * User Details route
+ */
+export const user = createRoute({
+	path: "/users/:id",
+	method: "get",
+	tags: ["Users"],
+	request: {
+		params: createIdSchema({ description: "User ID" }),
+	},
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Get a user details",
+			schema: selectUserSchema,
+		}),
+		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNAUTHORIZED,
+			message: MESSAGES.AUTH.UNAUTHORIZED,
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.AUTH.USER_NOT_FOUND,
+		}),
+		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
+			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TUserRoute = typeof user;
+
+/**
+ * Update User route
+ */
+export const updateUser = createRoute({
+	path: "/users/:id",
+	method: "put",
+	tags: ["Users"],
+	request: {
+		params: createIdSchema({ description: "User ID" }),
+		body: createJson({
+			description: "Payload to update user",
+			schema: updateUserSchema,
+		}),
+	},
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Update user details",
+			schema: createMessageSchema({ example: MESSAGES.USER.UPDATED_SUCCESS }).extend({
+				data: selectUserSchema,
+			}),
+		}),
+		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNAUTHORIZED,
+			message: MESSAGES.AUTH.UNAUTHORIZED,
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.AUTH.USER_NOT_FOUND,
+		}),
+		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
+			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TUpdateUserRoute = typeof updateUser;
+
+/**
+ * Delete User route
+ */
+export const deleteUser = createRoute({
+	path: "/users/:id",
+	method: "delete",
+	tags: ["Users"],
+	request: {
+		params: createIdSchema({ description: "User ID" }),
+	},
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Delete user",
+			schema: createMessageSchema({ example: MESSAGES.USER.DELETED_SUCCESS }),
+		}),
+		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNAUTHORIZED,
+			message: MESSAGES.AUTH.UNAUTHORIZED,
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.AUTH.USER_NOT_FOUND,
+		}),
+		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
+			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+			zodIssueSchema: createIdSchema({ description: "User ID" }),
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TDeleteUserRoute = typeof deleteUser;
