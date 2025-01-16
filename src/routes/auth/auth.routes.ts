@@ -119,6 +119,31 @@ export const logout = createRoute({
 
 export type TLogoutRoute = typeof logout;
 
+export const verifyEmail = createRoute({
+	path: "/verify-email",
+	method: "get",
+	tags: ["Auth"],
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Verify Email",
+			schema: createMessageSchema({
+				example: MESSAGES.AUTH.EMAIL_VERIFIED,
+			}),
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.AUTH.USER_NOT_FOUND,
+		}),
+		[HTTP_STATUSES.CONFLICT.CODE]: createErrorJson({
+			status: HTTP_STATUSES.CONFLICT,
+			message: MESSAGES.AUTH.USER_ALREADY_VERIFIED,
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TVerifyEmailRoute = typeof verifyEmail;
+
 export const forgotPassword = createRoute({
 	path: "/forgot-password",
 	method: "post",
@@ -127,7 +152,7 @@ export const forgotPassword = createRoute({
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Forgot Password",
 			schema: createMessageSchema({
-				example: MESSAGES.AUTH.LOGGED_OUT,
+				example: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
 			}),
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
@@ -135,3 +160,20 @@ export const forgotPassword = createRoute({
 });
 
 export type TForgotPasswordRoute = typeof forgotPassword;
+
+export const resetPassword = createRoute({
+	path: "/reset-password",
+	method: "post",
+	tags: ["Auth"],
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Reset Password",
+			schema: createMessageSchema({
+				example: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
+			}),
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TResetPasswordRoute = typeof resetPassword;
