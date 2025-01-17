@@ -1,6 +1,6 @@
 import { HTTP_STATUSES } from "@/constants";
 import { getStatusKeyByCode } from "@/helpers/other.helpers";
-import type { StatusCode, StatusCodeText, TError, TValidationError } from "@/helpers/types";
+import type { AppBindings, TError, TValidationError } from "@/helpers/types";
 import type { Hook } from "@hono/zod-openapi";
 import type { Context, Env, ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -8,18 +8,16 @@ import { ZodError } from "zod";
 
 export const onError: ErrorHandler = (error, ctx) => {
 	if (error instanceof ZodError) {
-		const { flatten, name, message, stack, cause } = error;
-
 		return ctx.json<TValidationError>(
 			{
 				status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE,
 				statusText: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
 				error: {
-					code: String(cause ?? "on-error.middleware@onError#001"),
-					stack,
-					message,
-					name,
-					issues: flatten().fieldErrors,
+					code: String(error?.cause ?? "on-error.middleware@onError#001"),
+					message: error?.message ?? "Validation failed",
+					name: error?.name ?? "ZodError",
+					issues: error?.flatten().fieldErrors ?? {},
+					stack: error?.stack ?? "",
 				},
 			},
 			{ status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE },
@@ -32,9 +30,9 @@ export const onError: ErrorHandler = (error, ctx) => {
 				status: error.status,
 				statusText: getStatusKeyByCode(error.status),
 				error: {
-					message: error?.message,
 					code: String(error?.cause ?? "on-error.middleware@onError#002"),
-					stack: error?.stack,
+					message: error?.message ?? "Something went wrong",
+					stack: error?.stack ?? "",
 				},
 			},
 			{ status: error.status },
@@ -47,8 +45,8 @@ export const onError: ErrorHandler = (error, ctx) => {
 			statusText: HTTP_STATUSES.INTERNAL_SERVER_ERROR.KEY,
 			error: {
 				code: String(error?.cause ?? "on-error.middleware@onError#003"),
-				message: error?.message,
-				stack: error?.stack,
+				message: error?.message ?? "Something went wrong",
+				stack: error?.stack ?? "",
 			},
 		},
 		{ status: HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE },
@@ -56,25 +54,25 @@ export const onError: ErrorHandler = (error, ctx) => {
 };
 
 // biome-ignore lint/suspicious/noExplicitAny: This is a generic hook that can be used in any context.
-export const handleZodError = <E extends Env>(result: Parameters<Hook<any, Env, any, any>>["0"], ctx: Context) => {
+export const handleZodError = (result: Parameters<Hook<any, AppBindings, any, any>>["0"], ctx: Context<AppBindings, any>) => {
 	if (!result.success) {
-		const status = ctx.res.status as StatusCode;
-		const statusText = ctx.res.statusText as StatusCodeText;
-		const { flatten, name, message, stack, cause } = result.error;
+		const { error, target } = result;
+
+		ctx.var.logger.trace({ target, error }, "Zod Validation error");
 
 		return ctx.json<TValidationError>(
 			{
-				status,
-				statusText,
+				status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE,
+				statusText: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
 				error: {
-					stack,
-					name,
-					message,
-					issues: flatten().fieldErrors,
-					code: String(cause ?? "on-error.middleware@onError#001"),
+					code: String(error?.cause ?? "on-error.middleware@onError#001"),
+					message: `Validation failed for '${target}'. Please ensure the provided value meets the required criteria.`,
+					name: error?.name ?? "ZodError",
+					issues: error?.flatten().fieldErrors ?? {},
+					stack: error?.stack ?? "",
 				},
 			},
-			{ status },
+			{ status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE },
 		);
 	}
 };

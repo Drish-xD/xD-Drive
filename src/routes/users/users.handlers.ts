@@ -1,4 +1,6 @@
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
+import { users as usersTable } from "@/db/schema";
+import { orderByQueryBuilder, totalCountQueryBuilder, whereQueryBuilder } from "@/helpers/pagination.helpers";
 import type { AppRouteHandler } from "@/helpers/types";
 import { HTTPException } from "hono/http-exception";
 import type { TDeleteUserRoute, TUpdateUserRoute, TUserRoute, TUsersMeRoute, TUsersRoute } from "./users.routes";
@@ -30,28 +32,52 @@ export const me: AppRouteHandler<TUsersMeRoute> = async (ctx) => {
  * Get Users Listing
  */
 export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
-	const { filters, limit, order, page } = ctx.req.valid("param");
-	
-	const users = await ctx.var.db.query.users.findMany({
-		columns: {
-			passwordHash: false,
-		},
-	});
+	const { page, limit, offset, order, filters, includeTotal } = ctx.req.valid("query");
 
-	return ctx.json({ data: [], meta: { limit, page, total: 0 } }, HTTP_STATUSES.OK.CODE);
+	const orderBy = orderByQueryBuilder(order);
+	// const where = whereQueryBuilder(filters);
+
+	const [usersListing, totalCount] = await Promise.all([
+		ctx.var.db.query.users.findMany({
+			columns: { passwordHash: false },
+			limit,
+			offset,
+			orderBy,
+			// where: (users, fn) => where(users, fn),
+		}),
+		totalCountQueryBuilder(usersTable, includeTotal),
+	]);
+
+	const pageCount = Math.ceil((totalCount ?? usersListing.length) / limit);
+
+	return ctx.json(
+		{
+			meta: {
+				currentPage: page,
+				startIndex: offset,
+				itemsPerPage: limit,
+				totalCount: totalCount,
+				pageCount: pageCount,
+				sortOrder: order,
+				appliedFilters: filters,
+			},
+			data: usersListing,
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
 };
 
-/**
- * Get User Details
- */
-export const user: AppRouteHandler<TUserRoute> = async (ctx) => {};
+// /**
+//  * Get User Details
+//  */
+// export const user: AppRouteHandler<TUserRoute> = async (ctx) => {};
 
-/**
- * Update User Details
- */
-export const updateUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {};
+// /**
+//  * Update User Details
+//  */
+// export const updateUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {};
 
-/**
- * Delete User
- */
-export const deleteUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {};
+// /**
+//  * Delete User
+//  */
+// export const deleteUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {};

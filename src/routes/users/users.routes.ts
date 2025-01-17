@@ -1,6 +1,7 @@
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { selectUserSchema, updateUserSchema } from "@/db/schema";
-import { createErrorJson, createIdSchema, createJson, createMessageSchema, createPaginationParams, createPaginationResponse } from "@/helpers/schema.helpers";
+import { createPaginationQuery, createPaginationResponse } from "@/helpers/pagination.helpers";
+import { createErrorJson, createIdSchema, createJson, createMessageSchema } from "@/helpers/schema.helpers";
 import { createRoute } from "@hono/zod-openapi";
 
 /**
@@ -33,11 +34,11 @@ export type TUsersMeRoute = typeof me;
  * Users Listing route
  */
 export const users = createRoute({
-	path: "/users",
+	path: "/",
 	method: "get",
 	tags: ["Users"],
 	request: {
-		params: createPaginationParams(),
+		query: createPaginationQuery(),
 	},
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
@@ -58,7 +59,7 @@ export type TUsersRoute = typeof users;
  * User Details route
  */
 export const user = createRoute({
-	path: "/users/:id",
+	path: "/:id",
 	method: "get",
 	tags: ["Users"],
 	request: {
@@ -91,7 +92,7 @@ export type TUserRoute = typeof user;
  * Update User route
  */
 export const updateUser = createRoute({
-	path: "/users/:id",
+	path: "/:id",
 	method: "put",
 	tags: ["Users"],
 	request: {
@@ -130,7 +131,7 @@ export type TUpdateUserRoute = typeof updateUser;
  * Delete User route
  */
 export const deleteUser = createRoute({
-	path: "/users/:id",
+	path: "/:id",
 	method: "delete",
 	tags: ["Users"],
 	request: {
