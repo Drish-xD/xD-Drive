@@ -5,4 +5,4 @@ export const COOKIES = {
 	REFRESH_TOKEN: "refresh_token",
 };
 
-export const UNPROTECTED_ROUTES_REGEX = /^\/(docs|auth\/(login|register)|health|$)/;
+export const UNPROTECTED_ROUTES_REGEX = /^\/(docs|auth\/(login|register|refresh-token)|health|$)/;
