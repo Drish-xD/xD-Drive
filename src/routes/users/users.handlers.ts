@@ -1,7 +1,8 @@
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { users as usersTable } from "@/db/schema";
-import { orderByQueryBuilder, totalCountQueryBuilder, whereQueryBuilder } from "@/helpers/pagination.helpers";
+import { orderByQueryBuilder, totalCountQueryBuilder } from "@/helpers/pagination.helpers";
 import type { AppRouteHandler } from "@/helpers/types";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import type { TDeleteUserRoute, TUpdateUserRoute, TUserRoute, TUsersMeRoute, TUsersRoute } from "./users.routes";
 
@@ -9,23 +10,9 @@ import type { TDeleteUserRoute, TUpdateUserRoute, TUserRoute, TUsersMeRoute, TUs
  * Current user details
  */
 export const me: AppRouteHandler<TUsersMeRoute> = async (ctx) => {
-	const userId = ctx.get("userData")?.id;
+	const userDetails = ctx.get("userData");
 
-	if (!userId) {
-		throw new HTTPException(HTTP_STATUSES.UNAUTHORIZED.CODE, {
-			message: MESSAGES.AUTH.UNAUTHORIZED,
-			cause: "users.handlers@me#001",
-		});
-	}
-
-	const userDetials = await ctx.var.db.query.users.findFirst({
-		where: (users, fn) => fn.eq(users.id, userId),
-		columns: {
-			passwordHash: false,
-		},
-	});
-
-	return ctx.json(userDetials, HTTP_STATUSES.OK.CODE);
+	return ctx.json(userDetails, HTTP_STATUSES.OK.CODE);
 };
 
 /**
@@ -70,14 +57,77 @@ export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
 // /**
 //  * Get User Details
 //  */
-// export const user: AppRouteHandler<TUserRoute> = async (ctx) => {};
+export const user: AppRouteHandler<TUserRoute> = async (ctx) => {
+	const userId = ctx.req.valid("param")?.id;
+
+	const userDetails = await ctx.var.db.query.users.findFirst({
+		columns: { passwordHash: false },
+		where: (users, fn) => fn.and(fn.eq(users.id, userId), fn.isNull(users.deletedAt)),
+	});
+
+	if (!userDetails) {
+		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
+			message: MESSAGES.USER.NOT_FOUND,
+			cause: "users.handlers@user#001",
+		});
+	}
+
+	return ctx.json(userDetails, HTTP_STATUSES.OK.CODE);
+};
 
 // /**
 //  * Update User Details
 //  */
-// export const updateUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {};
+export const updateUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
+	const userId = ctx.req.valid("param")?.id;
+	const updatePayload = ctx.req.valid("json");
+
+	const [{ passwordHash, ...userDetails }] = await ctx.var.db
+		.update(usersTable)
+		.set(updatePayload)
+		.where(and(eq(usersTable.id, userId), isNull(usersTable.deletedAt)))
+		.returning();
+
+	if (!userDetails) {
+		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
+			message: MESSAGES.USER.NOT_FOUND,
+			cause: "users.handlers@user#001",
+		});
+	}
+
+	return ctx.json(
+		{
+			message: MESSAGES.USER.UPDATED_SUCCESS,
+			data: userDetails,
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
+};
 
 // /**
 //  * Delete User
 //  */
-// export const deleteUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {};
+export const deleteUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {
+	const userId = ctx.req.valid("param")?.id;
+
+	const [{ deletedAt }] = await ctx.var.db
+		.update(usersTable)
+		.set({ deletedAt: new Date() })
+		.where(and(eq(usersTable.id, userId), isNotNull(usersTable.deletedAt)))
+		.returning();
+
+	if (!deletedAt) {
+		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
+			message: MESSAGES.USER.NOT_FOUND,
+			cause: "users.handlers@user#001",
+		});
+	}
+
+	return ctx.json(
+		{
+			message: MESSAGES.USER.DELETED_SUCCESS,
+			deletedAt,
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
+};

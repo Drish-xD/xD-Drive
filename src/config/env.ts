@@ -19,8 +19,8 @@ const configSchema = z
 		// AUTH & COOKIES
 		JWT_SECRET: z.string().default("secret"),
 		JWT_REFRESH_SECRET: z.string().default("secret"),
-		JWT_EXPIRES_IN: z.coerce.number().default(60),
-		JWT_REFRESH_EXPIRES_IN: z.coerce.number().default(10080),
+		JWT_EXPIRES_IN: z.coerce.number().default(1800),
+		JWT_REFRESH_EXPIRES_IN: z.coerce.number().default(604800),
 		COOKIE_SECRET: z.string().default("secret"),
 
 		// DATABASE

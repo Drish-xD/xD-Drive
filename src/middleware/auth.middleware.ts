@@ -46,7 +46,8 @@ export const setUserData = () =>
 		}
 
 		const userData = await ctx.var.db.query.users.findFirst({
-			where: (users, fn) => fn.eq(users.id, userId),
+			where: (users, fn) => fn.and(fn.eq(users.id, userId), fn.isNull(users.deletedAt)),
+			columns: { passwordHash: false },
 		});
 
 		if (!userData) {
