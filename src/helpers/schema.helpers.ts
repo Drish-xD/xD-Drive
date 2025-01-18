@@ -16,7 +16,7 @@ export const createMessageSchema = ({ description = "The message to return", exa
  */
 export const createUuidSchema = ({ description = "The UUID of the item", example = "1" }: TDescriptionExample = {}) => {
 	return z.object({
-		uuid: z.string().uuid().openapi({ description, example }),
+		id: z.string().uuid().openapi({ description, example }),
 	});
 };
 

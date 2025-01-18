@@ -1,8 +1,8 @@
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { selectUserSchema, updateUserSchema } from "@/db/schema";
 import { createPaginationQuery, createPaginationResponse } from "@/helpers/pagination.helpers";
-import { createErrorJson, createIdSchema, createJson, createMessageSchema } from "@/helpers/schema.helpers";
-import { createRoute } from "@hono/zod-openapi";
+import { createErrorJson, createJson, createMessageSchema, createUuidSchema } from "@/helpers/schema.helpers";
+import { createRoute, z } from "@hono/zod-openapi";
 
 /**
  * Current User route
@@ -63,7 +63,7 @@ export const user = createRoute({
 	method: "get",
 	tags: ["Users"],
 	request: {
-		params: createIdSchema({ description: "User ID" }),
+		params: createUuidSchema({ description: "User ID" }),
 	},
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
@@ -96,7 +96,7 @@ export const updateUser = createRoute({
 	method: "put",
 	tags: ["Users"],
 	request: {
-		params: createIdSchema({ description: "User ID" }),
+		params: createUuidSchema({ description: "User ID" }),
 		body: createJson({
 			description: "Payload to update user",
 			schema: updateUserSchema,
@@ -135,12 +135,14 @@ export const deleteUser = createRoute({
 	method: "delete",
 	tags: ["Users"],
 	request: {
-		params: createIdSchema({ description: "User ID" }),
+		params: createUuidSchema({ description: "User ID" }),
 	},
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Delete user",
-			schema: createMessageSchema({ example: MESSAGES.USER.DELETED_SUCCESS }),
+			schema: createMessageSchema({ example: MESSAGES.USER.DELETED_SUCCESS }).extend({
+				deletedAt: z.string(),
+			}),
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
 			status: HTTP_STATUSES.UNAUTHORIZED,
@@ -153,7 +155,7 @@ export const deleteUser = createRoute({
 		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
 			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
-			zodIssueSchema: createIdSchema({ description: "User ID" }),
+			zodIssueSchema: createUuidSchema({ description: "User ID" }),
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},

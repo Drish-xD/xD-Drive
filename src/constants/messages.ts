@@ -37,4 +37,5 @@ export const AUTH = {
 export const USER = {
 	DELETED_SUCCESS: "User deleted successfully!",
 	UPDATED_SUCCESS: "User updated successfully!",
+	NOT_FOUND: "User not found",
 } as const;

@@ -1,11 +1,12 @@
 import type { HTTP_STATUSES } from "@/constants";
 import type { DB } from "@/db";
+import type { TUser } from "@/db/schema";
 import { type OpenAPIHono, type RouteConfig, type RouteHandler, z } from "@hono/zod-openapi";
 import type { PinoLogger } from "hono-pino";
 import type { StatusCode } from "hono/utils/http-status";
+import type { JWTPayload } from "hono/utils/jwt/types";
 import type { createErrorSchema } from "./schema.helpers";
 export type { StatusCode } from "hono/utils/http-status";
-import type { TUser } from "@/db/schema";
 
 export type TJWTPayload = JWTPayload & { id: string };
 
