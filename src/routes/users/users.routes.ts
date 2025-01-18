@@ -141,7 +141,11 @@ export const deleteUser = createRoute({
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Delete user",
 			schema: createMessageSchema({ example: MESSAGES.USER.DELETED_SUCCESS }).extend({
-				deletedAt: z.string(),
+				data: selectUserSchema.pick({
+					deletedAt: true,
+					id: true,
+					status: true,
+				}),
 			}),
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
