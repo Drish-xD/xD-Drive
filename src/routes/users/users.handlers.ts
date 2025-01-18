@@ -2,7 +2,7 @@ import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { users as usersTable } from "@/db/schema";
 import { orderByQueryBuilder, totalCountQueryBuilder } from "@/helpers/pagination.helpers";
 import type { AppRouteHandler } from "@/helpers/types";
-import { and, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import type { TDeleteUserRoute, TUpdateUserRoute, TUserRoute, TUsersMeRoute, TUsersRoute } from "./users.routes";
 
@@ -62,7 +62,7 @@ export const user: AppRouteHandler<TUserRoute> = async (ctx) => {
 
 	const userDetails = await ctx.var.db.query.users.findFirst({
 		columns: { passwordHash: false },
-		where: (users, fn) => fn.and(fn.eq(users.id, userId), fn.isNull(users.deletedAt)),
+		where: (users, fn) => fn.and(fn.eq(users.id, userId), fn.eq(users.status, "active")),
 	});
 
 	if (!userDetails) {
@@ -82,23 +82,24 @@ export const updateUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
 	const userId = ctx.req.valid("param")?.id;
 	const updatePayload = ctx.req.valid("json");
 
-	const [{ passwordHash, ...userDetails }] = await ctx.var.db
+	const [updatedUserDetails] = await ctx.var.db
 		.update(usersTable)
 		.set(updatePayload)
-		.where(and(eq(usersTable.id, userId), isNull(usersTable.deletedAt)))
+		.where(and(eq(usersTable.id, userId), eq(usersTable.status, "active")))
 		.returning();
 
-	if (!userDetails) {
+	if (!updatedUserDetails) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
 			message: MESSAGES.USER.NOT_FOUND,
 			cause: "users.handlers@user#001",
 		});
 	}
+	const { passwordHash, ...data } = updatedUserDetails;
 
 	return ctx.json(
 		{
 			message: MESSAGES.USER.UPDATED_SUCCESS,
-			data: userDetails,
+			data,
 		},
 		HTTP_STATUSES.OK.CODE,
 	);
@@ -110,13 +111,17 @@ export const updateUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
 export const deleteUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {
 	const userId = ctx.req.valid("param")?.id;
 
-	const [{ deletedAt }] = await ctx.var.db
+	console.log("USER ID : ", userId, ctx.req.param);
+
+	const [deletedUser] = await ctx.var.db
 		.update(usersTable)
-		.set({ deletedAt: new Date() })
-		.where(and(eq(usersTable.id, userId), isNotNull(usersTable.deletedAt)))
+		.set({ deletedAt: new Date(), status: "deleted" })
+		.where(and(eq(usersTable.id, userId), isNull(usersTable.deletedAt)))
 		.returning();
 
-	if (!deletedAt) {
+	console.log("Deleted User : ", deletedUser);
+
+	if (!deletedUser?.deletedAt) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
 			message: MESSAGES.USER.NOT_FOUND,
 			cause: "users.handlers@user#001",
@@ -126,7 +131,11 @@ export const deleteUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {
 	return ctx.json(
 		{
 			message: MESSAGES.USER.DELETED_SUCCESS,
-			deletedAt,
+			data: {
+				id: deletedUser.id,
+				status: deletedUser.status,
+				deletedAt: deletedUser.deletedAt,
+			},
 		},
 		HTTP_STATUSES.OK.CODE,
 	);

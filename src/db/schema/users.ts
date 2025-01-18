@@ -96,10 +96,10 @@ export const insertUserSchema = createInsertSchema(users, {
 export const updateUserSchema = createUpdateSchema(users, {
 	email: (schema) => schema.email(),
 })
-	.omit({
-		id: true,
-		passwordHash: true,
-		...omitTimestamps,
+	.pick({
+		displayName: true,
+		fullName: true,
+		email: true,
 	})
 	.partial()
 	.openapi("UpdateUser", {
@@ -107,8 +107,6 @@ export const updateUserSchema = createUpdateSchema(users, {
 			displayName: userExample.displayName,
 			fullName: userExample.fullName,
 			email: userExample.email,
-			emailVerifiedAt: userExample.emailVerifiedAt,
-			status: userExample.status,
 		},
 	});
 

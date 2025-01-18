@@ -2,7 +2,7 @@ import { HTTP_STATUSES } from "@/constants";
 import { getStatusKeyByCode } from "@/helpers/other.helpers";
 import type { AppBindings, TError, TValidationError } from "@/helpers/types";
 import type { Hook } from "@hono/zod-openapi";
-import type { Context, Env, ErrorHandler } from "hono";
+import type { Context, ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { ZodError } from "zod";
 
