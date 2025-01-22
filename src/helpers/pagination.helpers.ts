@@ -70,7 +70,6 @@ export const createPaginationQuery = () => {
 				.openapi({ description: "Include total count in the response", example: "false" }),
 		})
 		.superRefine((data) => {
-			console.log("SUPERREFINE", typeof data, data);
 			if (data.limit === -1) {
 				data.page = 1;
 				data.offset = 0;

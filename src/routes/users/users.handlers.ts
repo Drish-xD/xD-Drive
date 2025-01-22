@@ -111,15 +111,11 @@ export const updateUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
 export const deleteUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {
 	const userId = ctx.req.valid("param")?.id;
 
-	console.log("USER ID : ", userId, ctx.req.param);
-
 	const [deletedUser] = await ctx.var.db
 		.update(usersTable)
 		.set({ deletedAt: new Date(), status: "deleted" })
 		.where(and(eq(usersTable.id, userId), isNull(usersTable.deletedAt)))
 		.returning();
-
-	console.log("Deleted User : ", deletedUser);
 
 	if (!deletedUser?.deletedAt) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {

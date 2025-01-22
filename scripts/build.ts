@@ -7,7 +7,7 @@ const NODE_FIX = 'import { createRequire as createImportMetaRequire } from "modu
 const BUILD_DIR = "../dist";
 
 try {
-	console.log("Building...");
+	console.info("Building...");
 	const nodeBuild = await Bun.build({
 		entrypoints: ["./src/index.ts"],
 		target: "node",
@@ -21,10 +21,10 @@ try {
 		const dest = path.join(destDir, result.path);
 		fs.existsSync(destDir) || fs.mkdirSync(destDir);
 		Bun.write(dest, fileContent);
-		console.log(`Wrote ${dest}`);
+		console.info(`Wrote ${dest}`);
 	}
 
-	console.log("Build successful");
+	console.info("Build successful");
 } catch (error) {
 	console.error("Build failed : ", error);
 	process.exit(1);
