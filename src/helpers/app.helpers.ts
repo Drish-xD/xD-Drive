@@ -31,8 +31,8 @@ export const initOpenAPI = (app: AppInstance) => {
 	app.get(
 		"/docs",
 		apiReference({
-			theme: "deepSpace",
-			layout: "modern",
+			theme: "default",
+			layout: "classic",
 			spec: {
 				url: "/docs/openapi",
 			},
