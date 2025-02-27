@@ -7,6 +7,79 @@ import { HTTPException } from "hono/http-exception";
 import type { TDeleteUserRoute, TUpdateUserRoute, TUserRoute, TUsersMeRoute, TUsersRoute } from "./users.routes";
 
 /**
+ * Current user details
+ */
+export const currentUser: AppRouteHandler<TUsersMeRoute> = async (ctx) => {
+	const userDetails = ctx.get("userData");
+
+	return ctx.json(userDetails, HTTP_STATUSES.OK.CODE);
+};
+
+/**
+ * Update User Details
+ */
+export const updateCurrentUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
+	const userDetails = ctx.get("userData");
+	const updatePayload = ctx.req.valid("json");
+
+	const [updatedUserDetails] = await ctx.var.db
+		.update(usersTable)
+		.set(updatePayload)
+		.where(and(eq(usersTable.id, userDetails?.id), eq(usersTable.status, "active")))
+		.returning();
+
+	if (!updatedUserDetails) {
+		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
+			message: MESSAGES.USER.NOT_FOUND,
+			cause: "users.handlers@user#001",
+		});
+	}
+	const { passwordHash, ...data } = updatedUserDetails;
+
+	return ctx.json(
+		{
+			message: MESSAGES.USER.UPDATED_SUCCESS,
+			data,
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
+};
+
+/**
+ * Delete User
+ */
+export const deleteCurrentUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {
+	const userDetails = ctx.get("userData");
+
+	const [deletedUser] = await ctx.var.db
+		.update(usersTable)
+		.set({ deletedAt: new Date(), status: "deleted" })
+		.where(and(eq(usersTable.id, userDetails.id), isNull(usersTable.deletedAt)))
+		.returning();
+
+	console.log("Deleted User : ", deletedUser);
+
+	if (!deletedUser?.deletedAt) {
+		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
+			message: MESSAGES.USER.NOT_FOUND,
+			cause: "users.handlers@user#001",
+		});
+	}
+
+	return ctx.json(
+		{
+			message: MESSAGES.USER.DELETED_SUCCESS,
+			data: {
+				id: deletedUser.id,
+				status: deletedUser.status,
+				deletedAt: deletedUser.deletedAt,
+			},
+		},
+		HTTP_STATUSES.OK.CODE,
+	);
+};
+
+/**
  * Get Users Listing
  */
 export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
@@ -45,9 +118,9 @@ export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
 	);
 };
 
-// /**
-//  * Get User Details
-//  */
+/**
+ * Get User Details
+ */
 export const user: AppRouteHandler<TUserRoute> = async (ctx) => {
 	const userId = ctx.req.valid("param")?.id;
 
@@ -64,77 +137,4 @@ export const user: AppRouteHandler<TUserRoute> = async (ctx) => {
 	}
 
 	return ctx.json(userDetails, HTTP_STATUSES.OK.CODE);
-};
-
-/**
- * Current user details
- */
-export const currentUser: AppRouteHandler<TUsersMeRoute> = async (ctx) => {
-	const userDetails = ctx.get("userData");
-
-	return ctx.json(userDetails, HTTP_STATUSES.OK.CODE);
-};
-
-// /**
-//  * Update User Details
-//  */
-export const updateCurrentUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
-	const userDetails = ctx.get("userData");
-	const updatePayload = ctx.req.valid("json");
-
-	const [updatedUserDetails] = await ctx.var.db
-		.update(usersTable)
-		.set(updatePayload)
-		.where(and(eq(usersTable.id, userDetails?.id), eq(usersTable.status, "active")))
-		.returning();
-
-	if (!updatedUserDetails) {
-		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-			message: MESSAGES.USER.NOT_FOUND,
-			cause: "users.handlers@user#001",
-		});
-	}
-	const { passwordHash, ...data } = updatedUserDetails;
-
-	return ctx.json(
-		{
-			message: MESSAGES.USER.UPDATED_SUCCESS,
-			data,
-		},
-		HTTP_STATUSES.OK.CODE,
-	);
-};
-
-// /**
-//  * Delete User
-//  */
-export const deleteCurrentUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {
-	const userDetails = ctx.get("userData");
-
-	const [deletedUser] = await ctx.var.db
-		.update(usersTable)
-		.set({ deletedAt: new Date(), status: "deleted" })
-		.where(and(eq(usersTable.id, userDetails.id), isNull(usersTable.deletedAt)))
-		.returning();
-
-	console.log("Deleted User : ", deletedUser);
-
-	if (!deletedUser?.deletedAt) {
-		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-			message: MESSAGES.USER.NOT_FOUND,
-			cause: "users.handlers@user#001",
-		});
-	}
-
-	return ctx.json(
-		{
-			message: MESSAGES.USER.DELETED_SUCCESS,
-			data: {
-				id: deletedUser.id,
-				status: deletedUser.status,
-				deletedAt: deletedUser.deletedAt,
-			},
-		},
-		HTTP_STATUSES.OK.CODE,
-	);
 };
