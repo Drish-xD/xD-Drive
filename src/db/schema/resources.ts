@@ -1,45 +1,63 @@
-import { createInsertSchema, defaultTimestamps, type inferType } from "@/db/lib";
+import { defaultTimestamps } from "@/db/lib";
 import { relations } from "drizzle-orm";
-import { type AnyPgColumn, boolean, pgEnum, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
-import { files } from "./files";
-import { folders } from "./folders";
-import { resourceOwners } from "./resouceOwners";
-import { resourceShared } from "./resourceShared";
+import { type AnyPgColumn, bigint, boolean, index, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { activityLogs } from "./activityLogs";
+import { resourceStatusEnum } from "./enums";
+import { permissions } from "./permissions";
+import { resourceVersions } from "./resourceVersions";
+import { tags } from "./tags";
+import { users } from "./users";
 
-export const ResourceType = pgEnum("resource_type", ["file", "folder"]);
-export const ResourceStatus = pgEnum("resource_status", ["active", "deleted", "archived"]);
+/**
+ * Table Definition
+ */
+export const resources = pgTable(
+	"resources",
+	{
+		id: uuid().primaryKey().defaultRandom(),
+		ownerId: uuid()
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		name: varchar({ length: 255 }).notNull(),
+		parentId: uuid().references((): AnyPgColumn => resources.id, { onDelete: "cascade" }),
+		isFolder: boolean().default(false).notNull(),
+		storagePath: text().notNull(),
+		status: resourceStatusEnum().default("active").notNull(),
+		isFavorite: boolean().default(false).notNull(),
 
-// Table
-export const resources = pgTable("resources", {
-	id: uuid().primaryKey().defaultRandom(),
-	resourceType: ResourceType().notNull(),
-	parentId: uuid().references((): AnyPgColumn => resources.id),
-	name: varchar({ length: 255 }).notNull(),
-	path: text().notNull(),
-	status: ResourceStatus().default("active").notNull(),
-	isFavorite: boolean().default(false).notNull(),
-	...defaultTimestamps,
-});
+		// File specific fields
+		mimeType: varchar({ length: 255 }),
+		size: bigint({ mode: "number" }).notNull().default(0),
+		contentHash: varchar({ length: 128 }),
 
-// Relations
+		// Timestamps
+		lastAccessedAt: timestamp(),
+		deletedAt: timestamp(),
+		...defaultTimestamps,
+	},
+	// Indexes
+	(table) => [
+		index("idx_resources_parent_id").on(table.parentId),
+		index("idx_resources_owner_id").on(table.ownerId),
+		index("idx_resources_name_parent").on(table.parentId, table.name, table.ownerId),
+	],
+);
+
+/**
+ * Relations
+ */
 export const resourcesRelations = relations(resources, ({ one, many }) => ({
+	owner: one(users, {
+		fields: [resources.ownerId],
+		references: [users.id],
+	}),
 	parent: one(resources, {
 		fields: [resources.parentId],
 		references: [resources.id],
 	}),
-	children: many(resources),
-	folder: one(folders, {
-		fields: [resources.id],
-		references: [folders.resourceId],
-	}),
-	file: one(files, {
-		fields: [resources.id],
-		references: [files.resourceId],
-	}),
-	resourceOwner: many(resourceOwners),
-	resourceShared: many(resourceShared),
+	children: many(resources, { relationName: "parent" }),
+	versions: many(resourceVersions),
+	permissions: many(permissions),
+	tags: many(tags),
+	activityLogs: many(activityLogs),
 }));
-
-// Zod Schema
-export const $ResourcesSchema = createInsertSchema(resources);
-export type TResources = inferType<typeof $ResourcesSchema>;

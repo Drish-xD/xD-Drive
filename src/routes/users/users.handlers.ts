@@ -7,15 +7,6 @@ import { HTTPException } from "hono/http-exception";
 import type { TDeleteUserRoute, TUpdateUserRoute, TUserRoute, TUsersMeRoute, TUsersRoute } from "./users.routes";
 
 /**
- * Current user details
- */
-export const me: AppRouteHandler<TUsersMeRoute> = async (ctx) => {
-	const userDetails = ctx.get("userData");
-
-	return ctx.json(userDetails, HTTP_STATUSES.OK.CODE);
-};
-
-/**
  * Get Users Listing
  */
 export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
@@ -75,17 +66,26 @@ export const user: AppRouteHandler<TUserRoute> = async (ctx) => {
 	return ctx.json(userDetails, HTTP_STATUSES.OK.CODE);
 };
 
+/**
+ * Current user details
+ */
+export const currentUser: AppRouteHandler<TUsersMeRoute> = async (ctx) => {
+	const userDetails = ctx.get("userData");
+
+	return ctx.json(userDetails, HTTP_STATUSES.OK.CODE);
+};
+
 // /**
 //  * Update User Details
 //  */
-export const updateUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
-	const userId = ctx.req.valid("param")?.id;
+export const updateCurrentUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
+	const userDetails = ctx.get("userData");
 	const updatePayload = ctx.req.valid("json");
 
 	const [updatedUserDetails] = await ctx.var.db
 		.update(usersTable)
 		.set(updatePayload)
-		.where(and(eq(usersTable.id, userId), eq(usersTable.status, "active")))
+		.where(and(eq(usersTable.id, userDetails?.id), eq(usersTable.status, "active")))
 		.returning();
 
 	if (!updatedUserDetails) {
@@ -108,15 +108,13 @@ export const updateUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
 // /**
 //  * Delete User
 //  */
-export const deleteUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {
-	const userId = ctx.req.valid("param")?.id;
-
-	console.log("USER ID : ", userId, ctx.req.param);
+export const deleteCurrentUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {
+	const userDetails = ctx.get("userData");
 
 	const [deletedUser] = await ctx.var.db
 		.update(usersTable)
 		.set({ deletedAt: new Date(), status: "deleted" })
-		.where(and(eq(usersTable.id, userId), isNull(usersTable.deletedAt)))
+		.where(and(eq(usersTable.id, userDetails.id), isNull(usersTable.deletedAt)))
 		.returning();
 
 	console.log("Deleted User : ", deletedUser);

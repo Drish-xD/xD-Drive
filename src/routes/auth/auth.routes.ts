@@ -1,5 +1,5 @@
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
-import { insertUserSchema, loginUserSchema, selectUserSchema } from "@/db/schema";
+import { insertUserSchema, loginUserSchema, selectUserSchema } from "@/db/zod";
 import { createErrorJson, createJson, createMessageSchema } from "@/helpers/schema.helpers";
 import { createRoute } from "@hono/zod-openapi";
 
@@ -146,43 +146,3 @@ export const verifyEmail = createRoute({
 });
 
 export type TVerifyEmailRoute = typeof verifyEmail;
-
-/**
- * Forgot Password route
- */
-export const forgotPassword = createRoute({
-	path: "/forgot-password",
-	method: "post",
-	tags: ["Auth"],
-	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Forgot Password",
-			schema: createMessageSchema({
-				example: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
-			}),
-		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
-	},
-});
-
-export type TForgotPasswordRoute = typeof forgotPassword;
-
-/**
- * Reset Password route
- */
-export const resetPassword = createRoute({
-	path: "/reset-password",
-	method: "post",
-	tags: ["Auth"],
-	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Reset Password",
-			schema: createMessageSchema({
-				example: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
-			}),
-		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
-	},
-});
-
-export type TResetPasswordRoute = typeof resetPassword;

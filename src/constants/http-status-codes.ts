@@ -71,7 +71,11 @@ export const GONE = { CODE: 410, PHRASE: "Gone", KEY: "GONE" } as const;
  *
  * The HTTP version used in the request is not supported by the server.
  */
-export const HTTP_VERSION_NOT_SUPPORTED = { CODE: 505, PHRASE: "HTTP Version Not Supported", KEY: "HTTP_VERSION_NOT_SUPPORTED" } as const;
+export const HTTP_VERSION_NOT_SUPPORTED = {
+	CODE: 505,
+	PHRASE: "HTTP Version Not Supported",
+	KEY: "HTTP_VERSION_NOT_SUPPORTED",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc2324#section-2.3.2
  *
@@ -83,7 +87,11 @@ export const IM_A_TEAPOT = { CODE: 418, PHRASE: "I'm a teapot", KEY: "IM_A_TEAPO
  *
  * The 507 (Insufficient Storage) status code means the method could not be performed on the resource because the server is unable to store the representation needed to successfully complete the request. This condition is considered to be temporary. If the request which received this status code was the result of a user action, the request MUST NOT be repeated until it is requested by a separate user action.
  */
-export const INSUFFICIENT_SPACE_ON_RESOURCE = { CODE: 419, PHRASE: "Insufficient Space on Resource", KEY: "INSUFFICIENT_SPACE_ON_RESOURCE" } as const;
+export const INSUFFICIENT_SPACE_ON_RESOURCE = {
+	CODE: 419,
+	PHRASE: "Insufficient Space on Resource",
+	KEY: "INSUFFICIENT_SPACE_ON_RESOURCE",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc2518#section-10.6
  *
@@ -95,7 +103,11 @@ export const INSUFFICIENT_STORAGE = { CODE: 507, PHRASE: "Insufficient Storage",
  *
  * The server encountered an unexpected condition that prevented it from fulfilling the request.
  */
-export const INTERNAL_SERVER_ERROR = { CODE: 500, PHRASE: "Internal Server Error", KEY: "INTERNAL_SERVER_ERROR" } as const;
+export const INTERNAL_SERVER_ERROR = {
+	CODE: 500,
+	PHRASE: "Internal Server Error",
+	KEY: "INTERNAL_SERVER_ERROR",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc7231#section-6.5.10
  *
@@ -150,7 +162,11 @@ export const MULTIPLE_CHOICES = { CODE: 300, PHRASE: "Multiple Choices", KEY: "M
  *
  * The 511 status code indicates that the client needs to authenticate to gain network access.
  */
-export const NETWORK_AUTHENTICATION_REQUIRED = { CODE: 511, PHRASE: "Network Authentication Required", KEY: "NETWORK_AUTHENTICATION_REQUIRED" } as const;
+export const NETWORK_AUTHENTICATION_REQUIRED = {
+	CODE: 511,
+	PHRASE: "Network Authentication Required",
+	KEY: "NETWORK_AUTHENTICATION_REQUIRED",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc7231#section-6.3.5
  *
@@ -162,7 +178,11 @@ export const NO_CONTENT = { CODE: 204, PHRASE: "No Content", KEY: "NO_CONTENT" }
  *
  * This response code means returned meta-information set is not exact set as available from the origin server, but collected from a local or a third party copy. Except this condition, 200 OK response should be preferred instead of this response.
  */
-export const NON_AUTHORITATIVE_INFORMATION = { CODE: 203, PHRASE: "Non Authoritative Information", KEY: "NON_AUTHORITATIVE_INFORMATION" } as const;
+export const NON_AUTHORITATIVE_INFORMATION = {
+	CODE: 203,
+	PHRASE: "Non Authoritative Information",
+	KEY: "NON_AUTHORITATIVE_INFORMATION",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc7231#section-6.5.6
  *
@@ -226,7 +246,11 @@ export const PRECONDITION_FAILED = { CODE: 412, PHRASE: "Precondition Failed", K
  *
  * The origin server requires the request to be conditional. Intended to prevent the 'lost update' problem, where a client GETs a resource's state, modifies it, and PUTs it back to the server, when meanwhile a third party has modified the state on the server, leading to a conflict.
  */
-export const PRECONDITION_REQUIRED = { CODE: 428, PHRASE: "Precondition Required", KEY: "PRECONDITION_REQUIRED" } as const;
+export const PRECONDITION_REQUIRED = {
+	CODE: 428,
+	PHRASE: "Precondition Required",
+	KEY: "PRECONDITION_REQUIRED",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc2518#section-10.1
  *
@@ -250,13 +274,21 @@ export const UPGRADE_REQUIRED = { CODE: 426, PHRASE: "Upgrade Required", KEY: "U
  *
  * This is similar to 401 but authentication is needed to be done by a proxy.
  */
-export const PROXY_AUTHENTICATION_REQUIRED = { CODE: 407, PHRASE: "Proxy Authentication Required", KEY: "PROXY_AUTHENTICATION_REQUIRED" } as const;
+export const PROXY_AUTHENTICATION_REQUIRED = {
+	CODE: 407,
+	PHRASE: "Proxy Authentication Required",
+	KEY: "PROXY_AUTHENTICATION_REQUIRED",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc6585#section-5
  *
  * The server is unwilling to process the request because its header fields are too large. The request MAY be resubmitted after reducing the size of the request header fields.
  */
-export const REQUEST_HEADER_FIELDS_TOO_LARGE = { CODE: 431, PHRASE: "Request Header Fields Too Large", KEY: "REQUEST_HEADER_FIELDS_TOO_LARGE" } as const;
+export const REQUEST_HEADER_FIELDS_TOO_LARGE = {
+	CODE: 431,
+	PHRASE: "Request Header Fields Too Large",
+	KEY: "REQUEST_HEADER_FIELDS_TOO_LARGE",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc7231#section-6.5.7
  *
@@ -280,7 +312,11 @@ export const REQUEST_URI_TOO_LONG = { CODE: 414, PHRASE: "Request-URI Too Long",
  *
  * The range specified by the Range header field in the request can't be fulfilled; it's possible that the range is outside the size of the target URI's data.
  */
-export const REQUESTED_RANGE_NOT_SATISFIABLE = { CODE: 416, PHRASE: "Requested Range Not Satisfiable", KEY: "REQUESTED_RANGE_NOT_SATISFIABLE" } as const;
+export const REQUESTED_RANGE_NOT_SATISFIABLE = {
+	CODE: 416,
+	PHRASE: "Requested Range Not Satisfiable",
+	KEY: "REQUESTED_RANGE_NOT_SATISFIABLE",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc7231#section-6.3.6
  *
@@ -328,7 +364,11 @@ export const UNAUTHORIZED = { CODE: 401, PHRASE: "Unauthorized", KEY: "UNAUTHORI
  *
  * The user-agent requested a resource that cannot legally be provided, such as a web page censored by a government.
  */
-export const UNAVAILABLE_FOR_LEGAL_REASONS = { CODE: 451, PHRASE: "Unavailable For Legal Reasons", KEY: "UNAVAILABLE_FOR_LEGAL_REASONS" } as const;
+export const UNAVAILABLE_FOR_LEGAL_REASONS = {
+	CODE: 451,
+	PHRASE: "Unavailable For Legal Reasons",
+	KEY: "UNAVAILABLE_FOR_LEGAL_REASONS",
+} as const;
 /**
  * Official Documentation @ https://tools.ietf.org/html/rfc2518#section-10.3
  *
@@ -340,7 +380,11 @@ export const UNPROCESSABLE_ENTITY = { CODE: 422, PHRASE: "Unprocessable Entity",
  *
  * The media format of the requested data is not supported by the server, so the server is rejecting the request.
  */
-export const UNSUPPORTED_MEDIA_TYPE = { CODE: 415, PHRASE: "Unsupported Media Type", KEY: "UNSUPPORTED_MEDIA_TYPE" } as const;
+export const UNSUPPORTED_MEDIA_TYPE = {
+	CODE: 415,
+	PHRASE: "Unsupported Media Type",
+	KEY: "UNSUPPORTED_MEDIA_TYPE",
+} as const;
 /**
  * @deprecated
  * Official Documentation @ https://tools.ietf.org/html/rfc7231#section-6.4.6

@@ -53,7 +53,7 @@ export const onError: ErrorHandler = (error, ctx) => {
 	);
 };
 
-// biome-ignore lint/suspicious/noExplicitAny: This is a generic hook that can be used in any context.
+// biome-ignore lint/suspicious/noExplicitAny: Function needs to handle any parameter type
 export const handleZodError = (result: Parameters<Hook<any, AppBindings, any, any>>["0"], ctx: Context<AppBindings, any>) => {
 	if (!result.success) {
 		const { error, target } = result;

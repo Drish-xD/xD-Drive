@@ -1,34 +1,8 @@
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
-import { selectUserSchema, updateUserSchema } from "@/db/schema";
+import { selectUserSchema, updateUserSchema } from "@/db/zod";
 import { createPaginationQuery, createPaginationResponse } from "@/helpers/pagination.helpers";
 import { createErrorJson, createJson, createMessageSchema, createUuidSchema } from "@/helpers/schema.helpers";
-import { createRoute, z } from "@hono/zod-openapi";
-
-/**
- * Current User route
- */
-export const me = createRoute({
-	path: "/me",
-	method: "get",
-	tags: ["Users"],
-	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Get current user details",
-			schema: selectUserSchema,
-		}),
-		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
-			message: MESSAGES.AUTH.UNAUTHORIZED,
-		}),
-		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
-			message: MESSAGES.AUTH.USER_NOT_FOUND,
-		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
-	},
-});
-
-export type TUsersMeRoute = typeof me;
+import { createRoute } from "@hono/zod-openapi";
 
 /**
  * Users Listing route
@@ -89,14 +63,39 @@ export const user = createRoute({
 export type TUserRoute = typeof user;
 
 /**
+ * Current User route
+ */
+export const currentUser = createRoute({
+	path: "/me",
+	method: "get",
+	tags: ["Users"],
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Get current user details",
+			schema: selectUserSchema,
+		}),
+		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNAUTHORIZED,
+			message: MESSAGES.AUTH.UNAUTHORIZED,
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.AUTH.USER_NOT_FOUND,
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TUsersMeRoute = typeof currentUser;
+
+/**
  * Update User route
  */
-export const updateUser = createRoute({
-	path: "/:id",
+export const updateCurrentUser = createRoute({
+	path: "/me",
 	method: "put",
 	tags: ["Users"],
 	request: {
-		params: createUuidSchema({ description: "User ID" }),
 		body: createJson({
 			description: "Payload to update user",
 			schema: updateUserSchema,
@@ -125,18 +124,15 @@ export const updateUser = createRoute({
 	},
 });
 
-export type TUpdateUserRoute = typeof updateUser;
+export type TUpdateUserRoute = typeof updateCurrentUser;
 
 /**
  * Delete User route
  */
-export const deleteUser = createRoute({
-	path: "/:id",
+export const deleteCurrentUser = createRoute({
+	path: "/me",
 	method: "delete",
 	tags: ["Users"],
-	request: {
-		params: createUuidSchema({ description: "User ID" }),
-	},
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Delete user",
@@ -156,13 +152,8 @@ export const deleteUser = createRoute({
 			status: HTTP_STATUSES.NOT_FOUND,
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
 		}),
-		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
-			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
-			zodIssueSchema: createUuidSchema({ description: "User ID" }),
-		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
 });
 
-export type TDeleteUserRoute = typeof deleteUser;
+export type TDeleteUserRoute = typeof deleteCurrentUser;

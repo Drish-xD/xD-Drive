@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { deleteCookie, setSignedCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import { generateJwtTokens, setCookieOptions } from "./auth.helpers";
-import type { TForgotPasswordRoute, TLoginRoute, TLogoutRoute, TRefreshTokenRoute, TRegisterRoute, TResetPasswordRoute, TVerifyEmailRoute } from "./auth.routes";
+import type { TLoginRoute, TLogoutRoute, TRefreshTokenRoute, TRegisterRoute, TVerifyEmailRoute } from "./auth.routes";
 
 /**
  * Register User
@@ -42,6 +42,7 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
  */
 export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 	const { password, email } = ctx.req.valid("json");
+	const db = ctx.get("db");
 
 	const checkUser = await ctx.var.db.query.users.findFirst({
 		where: (users, fn) => fn.eq(users.email, email),
@@ -135,32 +136,6 @@ export const verifyEmail: AppRouteHandler<TVerifyEmailRoute> = async (ctx) => {
 	return ctx.json(
 		{
 			message: MESSAGES.AUTH.EMAIL_VERIFIED,
-		},
-		HTTP_STATUSES.OK.CODE,
-	);
-};
-
-/**
- * Forgot User Password
- */
-export const forgotPassword: AppRouteHandler<TForgotPasswordRoute> = (ctx) => {
-	// TODO: TO BE IMPLEMENTED
-	return ctx.json(
-		{
-			message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
-		},
-		HTTP_STATUSES.OK.CODE,
-	);
-};
-
-/**
- * Reset User Password
- */
-export const resetPassword: AppRouteHandler<TResetPasswordRoute> = (ctx) => {
-	// TODO: TO BE IMPLEMENTED
-	return ctx.json(
-		{
-			message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
 		},
 		HTTP_STATUSES.OK.CODE,
 	);

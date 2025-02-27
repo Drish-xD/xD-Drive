@@ -61,10 +61,19 @@ export const createJson = <T extends z.ZodType>({
 export const createErrorSchema = <T extends z.AnyZodObject = z.SomeZodObject>({ example, extendedError }: { extendedError?: T; example?: TExample<T> } = {}) => {
 	const baseError = z.object({
 		status: z.custom<StatusCode>().openapi({ description: "Error status code to trace the error.", example: example?.status ?? 500 }),
-		statusText: z.custom<StatusCodeText>().openapi({ description: "Status text based on the status code.", example: example?.statusText ?? "INTERNAL_SERVER_ERROR" }),
+		statusText: z.custom<StatusCodeText>().openapi({
+			description: "Status text based on the status code.",
+			example: example?.statusText ?? "INTERNAL_SERVER_ERROR",
+		}),
 		error: z.object({
-			code: z.string().openapi({ description: "Traceable error code. - [route_path]@[function]#[unique_code]", example: example?.error?.code ?? "folder.file@function#001" }),
-			message: z.string().openapi({ description: "Error message.", example: example?.error?.message ?? "Some message related to the error." }),
+			code: z.string().openapi({
+				description: "Traceable error code. - [route_path]@[function]#[unique_code]",
+				example: example?.error?.code ?? "folder.file@function#001",
+			}),
+			message: z.string().openapi({
+				description: "Error message.",
+				example: example?.error?.message ?? "Some message related to the error.",
+			}),
 			stack: z
 				.string()
 				.optional()
@@ -91,7 +100,13 @@ export const createErrorJson = <T extends z.AnyZodObject = z.SomeZodObject, R ex
 		customExample,
 		extendedError,
 		zodIssueSchema,
-	}: { status: (typeof HTTP_STATUSES)[StatusCodeText]; message?: string; extendedError?: T; customExample?: TExample<T>["error"]; zodIssueSchema?: R } = {
+	}: {
+		status: (typeof HTTP_STATUSES)[StatusCodeText];
+		message?: string;
+		extendedError?: T;
+		customExample?: TExample<T>["error"];
+		zodIssueSchema?: R;
+	} = {
 		status: HTTP_STATUSES.INTERNAL_SERVER_ERROR,
 	},
 ) => {

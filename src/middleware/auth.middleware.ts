@@ -19,7 +19,13 @@ export const verifyAccessToken = () =>
 		}
 
 		logger.debug({ requestId, path, status: "Validating token" }, "[Middleware] Verify access token");
-		await jwt({ secret: CONFIG.JWT_SECRET, cookie: { key: COOKIES.ACCESS_TOKEN, secret: CONFIG.COOKIE_SECRET } })(ctx, next);
+		await jwt({
+			secret: CONFIG.JWT_SECRET,
+			cookie: {
+				key: COOKIES.ACCESS_TOKEN,
+				secret: CONFIG.COOKIE_SECRET,
+			},
+		})(ctx, next);
 	});
 
 export const setUserData = () =>
