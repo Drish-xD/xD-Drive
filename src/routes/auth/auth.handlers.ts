@@ -1,5 +1,6 @@
 import { CONFIG, COOKIES } from "@/config";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
+import { lower } from "@/db/lib";
 import { users } from "@/db/schema";
 import type { AppRouteHandler } from "@/helpers/types";
 import * as bcrypt from "bcryptjs";
@@ -16,7 +17,7 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 	const { password, email, ...body } = ctx.req.valid("json");
 
 	const checkUser = await ctx.var.db.query.users.findFirst({
-		where: (users, fn) => fn.eq(users.email, email),
+		where: (users, fn) => fn.eq(lower(users.email), email.toLowerCase()),
 		columns: { id: true },
 	});
 
@@ -45,7 +46,7 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 	const db = ctx.get("db");
 
 	const checkUser = await db.query.users.findFirst({
-		where: (users, fn) => fn.eq(users.email, email),
+		where: (users, fn) => fn.eq(lower(users.email), email.toLowerCase()),
 		columns: { passwordHash: true, id: true },
 	});
 

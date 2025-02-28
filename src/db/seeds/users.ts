@@ -14,7 +14,7 @@ const fakeUsers = faker.helpers.multiple(
 		return {
 			fullName: faker.person.fullName({ firstName, lastName }),
 			displayName: faker.internet.displayName({ firstName, lastName }),
-			email: faker.internet.email({ firstName, lastName }),
+			email: faker.internet.email({ firstName, lastName }).toLowerCase(),
 			passwordHash: bcrypt.hashSync("password", CONFIG.SALT_ROUNDS),
 		} satisfies PartialUnknown<TInsertUser & { passwordHash: string }>;
 	},
