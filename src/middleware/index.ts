@@ -4,7 +4,7 @@ import { cors } from "hono/cors";
 import { prettyJSON } from "hono/pretty-json";
 import { requestId } from "hono/request-id";
 import { trimTrailingSlash } from "hono/trailing-slash";
-import { setUserData, verifyAccessToken, verifyRefreshToken } from "./auth.middleware";
+import { setUserDataFromAccessToken, setUserDataFromRefreshToken, verifyAccessToken, verifyRefreshToken } from "./auth.middleware";
 import { serveFavicon } from "./favicon.middleware";
 import { logger } from "./logger.middleware";
 import { notFound } from "./not-found.middleware";
@@ -24,9 +24,10 @@ export const middleware = (app: AppInstance) => {
 	app.use(serveFavicon("💻"));
 
 	app.use(verifyAccessToken());
-	app.use(setUserData());
+	app.use(setUserDataFromAccessToken());
 
 	app.use("/auth/refresh-token", verifyRefreshToken());
+	app.use("/auth/refresh-token", setUserDataFromRefreshToken());
 
 	app.notFound(notFound);
 

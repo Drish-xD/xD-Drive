@@ -22,7 +22,7 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 
 	if (checkUser) {
 		throw new HTTPException(HTTP_STATUSES.CONFLICT.CODE, {
-			cause: "auth.handlers.register#001",
+			cause: "auth.handlers@register#001",
 			message: MESSAGES.AUTH.USER_ALREADY_EXISTS,
 		});
 	}
@@ -44,7 +44,7 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 	const { password, email } = ctx.req.valid("json");
 	const db = ctx.get("db");
 
-	const checkUser = await ctx.var.db.query.users.findFirst({
+	const checkUser = await db.query.users.findFirst({
 		where: (users, fn) => fn.eq(users.email, email),
 		columns: { passwordHash: true, id: true },
 	});
@@ -52,7 +52,7 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 	if (!checkUser) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
-			cause: "auth.handlers.login#001",
+			cause: "auth.handlers@login#001",
 		});
 	}
 
@@ -61,7 +61,7 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 	if (!isValid) {
 		throw new HTTPException(HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE, {
 			message: MESSAGES.AUTH.INVALID_CREDENTIALS,
-			cause: "auth.handlers.login#002",
+			cause: "auth.handlers@login#002",
 		});
 	}
 
@@ -82,16 +82,9 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
  * Refresh Token
  */
 export const refreshToken: AppRouteHandler<TRefreshTokenRoute> = async (ctx) => {
-	const payload = ctx.get("jwtPayload");
+	const userDetails = ctx.get("userData");
 
-	if (!payload?.id) {
-		throw new HTTPException(HTTP_STATUSES.UNAUTHORIZED.CODE, {
-			message: MESSAGES.AUTH.INVALID_REFRESH_TOKEN,
-			cause: "auth.handlers.refreshToken#001",
-		});
-	}
-
-	const { accessToken, refreshToken } = await generateJwtTokens(payload?.id);
+	const { accessToken, refreshToken } = await generateJwtTokens(userDetails.id);
 
 	await setSignedCookie(ctx, COOKIES.ACCESS_TOKEN, accessToken, CONFIG.COOKIE_SECRET, setCookieOptions.accessToken);
 	await setSignedCookie(ctx, COOKIES.REFRESH_TOKEN, refreshToken, CONFIG.COOKIE_SECRET, setCookieOptions.refreshToken);
@@ -127,7 +120,7 @@ export const verifyEmail: AppRouteHandler<TVerifyEmailRoute> = async (ctx) => {
 	if (userData?.emailVerifiedAt) {
 		throw new HTTPException(HTTP_STATUSES.CONFLICT.CODE, {
 			message: MESSAGES.AUTH.USER_ALREADY_VERIFIED,
-			cause: "auth.handlers.verifyEmail#001",
+			cause: "auth.handlers@verifyEmail#001",
 		});
 	}
 

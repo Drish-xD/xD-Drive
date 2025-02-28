@@ -1,6 +1,6 @@
 import type { HTTP_STATUSES } from "@/constants";
 import type { DB } from "@/db";
-import type { TUser } from "@/db/schema";
+import type { TUser } from "@/db/zod";
 import { type OpenAPIHono, type RouteConfig, type RouteHandler, z } from "@hono/zod-openapi";
 import type { PinoLogger } from "hono-pino";
 import type { StatusCode } from "hono/utils/http-status";

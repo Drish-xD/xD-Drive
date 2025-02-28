@@ -28,7 +28,7 @@ export const verifyAccessToken = () =>
 		})(ctx, next);
 	});
 
-export const setUserData = () =>
+export const setUserDataFromAccessToken = () =>
 	createMiddleware<AppBindings>(async (ctx, next) => {
 		const {
 			var: { logger, requestId },
@@ -44,10 +44,9 @@ export const setUserData = () =>
 		const userId = ctx.get("jwtPayload")?.id;
 
 		if (!userId) {
-			logger.trace({ requestId, path, status: "Failed", message: "Missing user id", cause: "auth.middleware.setUserData#001" }, "[Middleware] Set user data");
 			throw new HTTPException(HTTP_STATUSES.UNAUTHORIZED.CODE, {
 				message: MESSAGES.AUTH.INVALID_ACCESS_TOKEN,
-				cause: "auth.middleware.setUserData#001",
+				cause: "auth.middleware@setUserData#001",
 			});
 		}
 
@@ -56,11 +55,10 @@ export const setUserData = () =>
 			columns: { passwordHash: false },
 		});
 
-		if (!userData) {
-			logger.trace({ requestId, path, status: "Failed", message: "User not found", cause: "auth.middleware.setUserData#002" }, "[Middleware] Set user data");
+		if (!userData?.id) {
 			throw new HTTPException(HTTP_STATUSES.UNAUTHORIZED.CODE, {
 				message: MESSAGES.AUTH.INVALID_ACCESS_TOKEN,
-				cause: "auth.middleware.setUserData#001",
+				cause: "auth.middleware@setUserData#002",
 			});
 		}
 
@@ -71,3 +69,37 @@ export const setUserData = () =>
 	});
 
 export const verifyRefreshToken = () => jwt({ secret: CONFIG.JWT_REFRESH_SECRET, cookie: { key: COOKIES.REFRESH_TOKEN, secret: CONFIG.COOKIE_SECRET } });
+
+export const setUserDataFromRefreshToken = () =>
+	createMiddleware<AppBindings>(async (ctx, next) => {
+		const {
+			var: { logger, requestId },
+			req: { path },
+		} = ctx;
+		logger.trace({ requestId, path, status: "Initializing" }, "[Middleware] Verify user from refresh token");
+		const userId = ctx.get("jwtPayload")?.id;
+
+		if (!userId) {
+			throw new HTTPException(HTTP_STATUSES.UNAUTHORIZED.CODE, {
+				message: MESSAGES.AUTH.INVALID_ACCESS_TOKEN,
+				cause: "auth.middleware@verifyUserFromRefreshToken#001",
+			});
+		}
+
+		const userData = await ctx.var.db.query.users.findFirst({
+			where: (users, fn) => fn.and(fn.eq(users.id, userId), fn.eq(users.status, "active")),
+			columns: { passwordHash: false },
+		});
+
+		if (!userData?.id) {
+			throw new HTTPException(HTTP_STATUSES.UNAUTHORIZED.CODE, {
+				message: MESSAGES.AUTH.INVALID_ACCESS_TOKEN,
+				cause: "auth.middleware@verifyUserFromRefreshToken#002",
+			});
+		}
+
+		logger.debug({ requestId, path, userId, status: "Success" }, "[Middleware] Verify user from refresh token");
+		ctx.set("userData", userData);
+
+		await next();
+	});
