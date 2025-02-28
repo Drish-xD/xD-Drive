@@ -66,3 +66,6 @@ export const loginUserSchema = insertUserSchema
 	});
 
 export type TUser = inferType<typeof selectUserSchema>;
+export type TInsertUser = inferType<typeof insertUserSchema>;
+export type TUpdateUser = inferType<typeof updateUserSchema>;
+export type TLoginUser = inferType<typeof loginUserSchema>;

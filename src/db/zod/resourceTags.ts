@@ -11,3 +11,5 @@ export const insertResourceTagSchema = createInsertSchema(resourceTags).omit({ c
 export const updateResourceTagSchema = createUpdateSchema(resourceTags).omit({ createdAt: true }).partial().openapi("UpdateResourceTag");
 
 export type TResourceTag = inferType<typeof selectResourceTagSchema>;
+export type TInsertResourceTag = inferType<typeof insertResourceTagSchema>;
+export type TUpdateResourceTag = inferType<typeof updateResourceTagSchema>;

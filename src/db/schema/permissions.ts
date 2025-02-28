@@ -9,7 +9,7 @@ import { users } from "./users";
  * Table Definition
  */
 export const permissions = pgTable(
-	"tags",
+	"permissions",
 	{
 		id: uuid().primaryKey().defaultRandom(),
 		resourceId: uuid()
@@ -29,8 +29,8 @@ export const permissions = pgTable(
 		...defaultTimestamps,
 	},
 
-	// Indexes & Constraints
 	(table) => [
+		// Indexes & Constraints
 		check("check_valid_permission", sql`(${table.isPublic} = true AND ${table.grantedTo} IS NULL) OR (${table.isPublic} = false AND ${table.grantedTo} IS NOT NULL)`),
 		index("idx_permissions_resource").on(table.resourceId),
 		index("idx_permissions_user").on(table.grantedTo).where(isNotNull(table.grantedTo)),

@@ -12,3 +12,5 @@ export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({ i
 export const updateActivityLogSchema = createUpdateSchema(activityLogs).omit({ id: true, createdAt: true }).partial().openapi("UpdateActivityLog");
 
 export type TActivityLog = inferType<typeof selectActivityLogSchema>;
+export type TInsertActivityLog = inferType<typeof insertActivityLogSchema>;
+export type TUpdateActivityLog = inferType<typeof updateActivityLogSchema>;

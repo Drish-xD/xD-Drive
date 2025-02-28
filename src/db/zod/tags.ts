@@ -12,3 +12,5 @@ export const insertTagSchema = createInsertSchema(tags).omit({ id: true, created
 export const updateTagSchema = createUpdateSchema(tags).omit({ id: true, createdAt: true }).partial().openapi("UpdateTag");
 
 export type TTag = inferType<typeof selectTagSchema>;
+export type TInsertTag = inferType<typeof insertTagSchema>;
+export type TUpdateTag = inferType<typeof updateTagSchema>;

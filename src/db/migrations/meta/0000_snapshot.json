@@ -1,5 +1,5 @@
 {
-	"id": "0f2f6633-cffd-48d6-86df-4ec57c02925b",
+	"id": "2c483860-0b91-4e33-9994-b5d6e2c01a37",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -130,8 +130,8 @@
 			"checkConstraints": {},
 			"isRLSEnabled": false
 		},
-		"public.tags": {
-			"name": "tags",
+		"public.permissions": {
+			"name": "permissions",
 			"schema": "",
 			"columns": {
 				"id": {
@@ -141,24 +141,57 @@
 					"notNull": true,
 					"default": "gen_random_uuid()"
 				},
-				"name": {
-					"name": "name",
-					"type": "varchar(255)",
+				"resource_id": {
+					"name": "resource_id",
+					"type": "uuid",
 					"primaryKey": false,
 					"notNull": true
 				},
-				"is_system_generated": {
-					"name": "is_system_generated",
+				"granted_to": {
+					"name": "granted_to",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"is_public": {
+					"name": "is_public",
 					"type": "boolean",
 					"primaryKey": false,
 					"notNull": true,
 					"default": false
 				},
+				"access_level": {
+					"name": "access_level",
+					"type": "resource_access_level",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'viewer'"
+				},
+				"public_link_token": {
+					"name": "public_link_token",
+					"type": "varchar(128)",
+					"primaryKey": false,
+					"notNull": false
+				},
 				"created_by": {
 					"name": "created_by",
 					"type": "uuid",
 					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp",
+					"primaryKey": false,
 					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
 				},
 				"created_at": {
 					"name": "created_at",
@@ -169,59 +202,92 @@
 				}
 			},
 			"indexes": {
-				"idx_tags_name_system": {
-					"name": "idx_tags_name_system",
+				"idx_permissions_resource": {
+					"name": "idx_permissions_resource",
 					"columns": [
 						{
-							"expression": "name",
+							"expression": "resource_id",
 							"isExpression": false,
 							"asc": true,
 							"nulls": "last"
 						}
 					],
-					"isUnique": true,
-					"where": "\"tags\".\"undefined\" = true",
+					"isUnique": false,
 					"concurrently": false,
 					"method": "btree",
 					"with": {}
 				},
-				"idx_tags_name_creator": {
-					"name": "idx_tags_name_creator",
+				"idx_permissions_user": {
+					"name": "idx_permissions_user",
 					"columns": [
 						{
-							"expression": "name",
+							"expression": "granted_to",
 							"isExpression": false,
 							"asc": true,
 							"nulls": "last"
-						},
+						}
+					],
+					"isUnique": false,
+					"where": "\"permissions\".\"granted_to\" is not null",
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_permissions_public_link": {
+					"name": "idx_permissions_public_link",
+					"columns": [
 						{
-							"expression": "created_by",
+							"expression": "public_link_token",
 							"isExpression": false,
 							"asc": true,
 							"nulls": "last"
 						}
 					],
 					"isUnique": true,
+					"where": "\"permissions\".\"public_link_token\" is not null",
 					"concurrently": false,
 					"method": "btree",
 					"with": {}
 				}
 			},
 			"foreignKeys": {
-				"tags_created_by_users_id_fk": {
-					"name": "tags_created_by_users_id_fk",
-					"tableFrom": "tags",
+				"permissions_resource_id_resources_id_fk": {
+					"name": "permissions_resource_id_resources_id_fk",
+					"tableFrom": "permissions",
+					"tableTo": "resources",
+					"columnsFrom": ["resource_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"permissions_granted_to_resources_id_fk": {
+					"name": "permissions_granted_to_resources_id_fk",
+					"tableFrom": "permissions",
+					"tableTo": "resources",
+					"columnsFrom": ["granted_to"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"permissions_created_by_users_id_fk": {
+					"name": "permissions_created_by_users_id_fk",
+					"tableFrom": "permissions",
 					"tableTo": "users",
 					"columnsFrom": ["created_by"],
 					"columnsTo": ["id"],
-					"onDelete": "set null",
+					"onDelete": "no action",
 					"onUpdate": "no action"
 				}
 			},
 			"compositePrimaryKeys": {},
 			"uniqueConstraints": {},
 			"policies": {},
-			"checkConstraints": {},
+			"checkConstraints": {
+				"check_valid_permission": {
+					"name": "check_valid_permission",
+					"value": "(\"permissions\".\"is_public\" = true AND \"permissions\".\"granted_to\" IS NULL) OR (\"permissions\".\"is_public\" = false AND \"permissions\".\"granted_to\" IS NOT NULL)"
+				}
+			},
 			"isRLSEnabled": false
 		},
 		"public.resources": {
@@ -624,6 +690,100 @@
 					"columnsFrom": ["created_by"],
 					"columnsTo": ["id"],
 					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.tags": {
+			"name": "tags",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"name": {
+					"name": "name",
+					"type": "varchar(255)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"is_ai_generated": {
+					"name": "is_ai_generated",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"idx_tags_name_system": {
+					"name": "idx_tags_name_system",
+					"columns": [
+						{
+							"expression": "name",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"where": "\"tags\".\"is_ai_generated\" = true",
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_tags_name_creator": {
+					"name": "idx_tags_name_creator",
+					"columns": [
+						{
+							"expression": "name",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "created_by",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"tags_created_by_users_id_fk": {
+					"name": "tags_created_by_users_id_fk",
+					"tableFrom": "tags",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "set null",
 					"onUpdate": "no action"
 				}
 			},

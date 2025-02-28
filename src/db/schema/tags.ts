@@ -12,16 +12,13 @@ export const tags = pgTable(
 	{
 		id: uuid().primaryKey().defaultRandom(),
 		name: varchar({ length: 255 }).notNull(),
-		isSystemGenerated: boolean().notNull().default(false),
+		isAiGenerated: boolean().notNull().default(false),
 		createdBy: uuid().references(() => users.id, { onDelete: "set null" }),
 		createdAt: defaultTimestamps.createdAt,
 	},
 
 	// Indexes
-	(table) => [
-		uniqueIndex("idx_tags_name_system").on(table.name).where(eq(table.isSystemGenerated, sql`true`)),
-		uniqueIndex("idx_tags_name_creator").on(table.name, table.createdBy),
-	],
+	(table) => [uniqueIndex("idx_tags_name_system").on(table.name).where(eq(table.isAiGenerated, sql`true`)), uniqueIndex("idx_tags_name_creator").on(table.name, table.createdBy)],
 );
 
 /**

@@ -5,3 +5,5 @@ const { createInsertSchema, createSelectSchema, createUpdateSchema } = createSch
 
 export type { infer as inferType } from "zod";
 export { createInsertSchema, createSelectSchema, createUpdateSchema };
+
+export type PartialUnknown<T> = Partial<Record<keyof T, unknown>>;

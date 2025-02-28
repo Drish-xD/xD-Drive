@@ -16,3 +16,5 @@ export const updatePermissionSchema = createUpdateSchema(permissions)
 	.openapi("UpdatePermission");
 
 export type TPermission = inferType<typeof selectPermissionSchema>;
+export type TInsertPermission = inferType<typeof insertPermissionSchema>;
+export type TUpdatePermission = inferType<typeof updatePermissionSchema>;

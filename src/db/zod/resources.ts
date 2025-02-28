@@ -16,3 +16,5 @@ export const updateResourceSchema = createUpdateSchema(resources)
 	.openapi("UpdateResource");
 
 export type TResource = inferType<typeof selectResourceSchema>;
+export type TInsertResource = inferType<typeof insertResourceSchema>;
+export type TUpdateResource = inferType<typeof updateResourceSchema>;
