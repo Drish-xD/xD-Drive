@@ -57,8 +57,6 @@ export const deleteCurrentUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) 
 		.where(and(eq(usersTable.id, userDetails.id), isNull(usersTable.deletedAt)))
 		.returning();
 
-	console.log("Deleted User : ", deletedUser);
-
 	if (!deletedUser?.deletedAt) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
 			message: MESSAGES.USER.NOT_FOUND,
