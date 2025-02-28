@@ -1,6 +1,6 @@
+import { defaultTimestamps } from "@/db/lib";
 import { isNotNull, relations, sql } from "drizzle-orm";
 import { boolean, check, index, pgTable, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
-import { defaultTimestamps } from "../lib";
 import { accessLevelEnum } from "./enums";
 import { resources } from "./resources";
 import { users } from "./users";
