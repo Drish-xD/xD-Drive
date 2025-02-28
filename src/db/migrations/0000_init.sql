@@ -111,12 +111,15 @@ CREATE INDEX "idx_activity_resource" ON "activity_logs" USING btree ("resource_i
 CREATE INDEX "idx_permissions_resource" ON "permissions" USING btree ("resource_id");--> statement-breakpoint
 CREATE INDEX "idx_permissions_user" ON "permissions" USING btree ("granted_to") WHERE "permissions"."granted_to" is not null;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_permissions_public_link" ON "permissions" USING btree ("public_link_token") WHERE "permissions"."public_link_token" is not null;--> statement-breakpoint
+CREATE INDEX "idx_resources_status" ON "resources" USING btree ("status");--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_resources_content_hash" ON "resources" USING btree ("content_hash");--> statement-breakpoint
 CREATE INDEX "idx_resources_parent_id" ON "resources" USING btree ("parent_id");--> statement-breakpoint
 CREATE INDEX "idx_resources_owner_id" ON "resources" USING btree ("owner_id");--> statement-breakpoint
 CREATE INDEX "idx_resources_name_parent" ON "resources" USING btree ("parent_id","name","owner_id");--> statement-breakpoint
 CREATE INDEX "idx_resource_tags_tag_id" ON "resource_tags" USING btree ("tag_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_resource_versions_number" ON "resource_versions" USING btree ("version_number","resource_id");--> statement-breakpoint
 CREATE INDEX "idx_versions_resource" ON "resource_versions" USING btree ("resource_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_versions_current" ON "resource_versions" USING btree ("resource_id") WHERE "resource_versions"."is_current" = true;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_tags_name_system" ON "tags" USING btree ("name") WHERE "tags"."is_ai_generated" = true;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_tags_name_creator" ON "tags" USING btree ("name","created_by");--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_users_email" ON "users" USING btree ("email");
+CREATE UNIQUE INDEX "idx_users_email" ON "users" USING btree (lower("email"));

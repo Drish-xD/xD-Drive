@@ -1,5 +1,5 @@
 {
-	"id": "2c483860-0b91-4e33-9994-b5d6e2c01a37",
+	"id": "dc68a97e-8f68-4658-a342-27ce48451092",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"version": "7",
 	"dialect": "postgresql",
@@ -394,6 +394,36 @@
 				}
 			},
 			"indexes": {
+				"idx_resources_status": {
+					"name": "idx_resources_status",
+					"columns": [
+						{
+							"expression": "status",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"idx_resources_content_hash": {
+					"name": "idx_resources_content_hash",
+					"columns": [
+						{
+							"expression": "content_hash",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
 				"idx_resources_parent_id": {
 					"name": "idx_resources_parent_id",
 					"columns": [
@@ -641,6 +671,27 @@
 				}
 			},
 			"indexes": {
+				"idx_resource_versions_number": {
+					"name": "idx_resource_versions_number",
+					"columns": [
+						{
+							"expression": "version_number",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "resource_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
 				"idx_versions_resource": {
 					"name": "idx_versions_resource",
 					"columns": [
@@ -888,9 +939,9 @@
 					"name": "idx_users_email",
 					"columns": [
 						{
-							"expression": "email",
-							"isExpression": false,
+							"expression": "lower(\"email\")",
 							"asc": true,
+							"isExpression": true,
 							"nulls": "last"
 						}
 					],
