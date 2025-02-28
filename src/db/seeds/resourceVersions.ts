@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import type { PartialUnknown } from "@/db/lib";
 import { resourceVersions } from "@/db/schema";
-import type { TInsertResourceVersion } from "@/db/zod";
+import type { TInsertResourceVersion } from "@/models";
 import { faker } from "@faker-js/faker";
 import { sql } from "drizzle-orm";
 

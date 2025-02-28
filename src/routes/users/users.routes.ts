@@ -1,7 +1,7 @@
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
-import { selectUserSchema, updateUserSchema } from "@/db/zod";
 import { createPaginationQuery, createPaginationResponse } from "@/helpers/pagination.helpers";
 import { createErrorJson, createJson, createMessageSchema, createUuidSchema } from "@/helpers/schema.helpers";
+import { selectUserSchema, updateUserSchema } from "@/models";
 import { createRoute } from "@hono/zod-openapi";
 
 /**

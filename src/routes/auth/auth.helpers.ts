@@ -1,6 +1,6 @@
 import { CONFIG } from "@/config";
-import type { TUser } from "@/db/zod";
 import type { TJWTPayload } from "@/helpers/types";
+import type { TUser } from "@/models";
 import { getUnixTime } from "date-fns";
 import { sign } from "hono/jwt";
 import type { CookieOptions } from "hono/utils/cookie";

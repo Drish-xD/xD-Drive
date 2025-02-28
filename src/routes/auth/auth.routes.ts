@@ -1,6 +1,6 @@
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
-import { insertUserSchema, loginUserSchema, selectUserSchema } from "@/db/zod";
 import { createErrorJson, createJson, createMessageSchema } from "@/helpers/schema.helpers";
+import { insertUserSchema, loginUserSchema, selectUserSchema } from "@/models";
 import { createRoute } from "@hono/zod-openapi";
 
 /**

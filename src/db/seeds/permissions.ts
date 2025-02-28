@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import type { PartialUnknown } from "@/db/lib";
 import { accessLevelEnum, permissions } from "@/db/schema";
-import type { TInsertPermission } from "@/db/zod";
+import type { TInsertPermission } from "@/models";
 import { faker } from "@faker-js/faker";
 import { sql } from "drizzle-orm";
 

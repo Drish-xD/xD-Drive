@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import type { PartialUnknown } from "@/db/lib";
 import { tags } from "@/db/schema";
-import type { TInsertTag } from "@/db/zod";
+import type { TInsertTag } from "@/models";
 import { faker } from "@faker-js/faker";
 import { sql } from "drizzle-orm";
 

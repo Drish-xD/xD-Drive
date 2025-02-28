@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import type { PartialUnknown } from "@/db/lib";
 import { activityLogs, activityTypeEnum } from "@/db/schema";
-import type { TInsertActivityLog } from "@/db/zod";
+import type { TInsertActivityLog } from "@/models";
 import { faker } from "@faker-js/faker";
 import { sql } from "drizzle-orm";
 
