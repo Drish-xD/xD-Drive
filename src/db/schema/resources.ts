@@ -1,6 +1,6 @@
 import { defaultTimestamps } from "@/db/lib";
 import { relations } from "drizzle-orm";
-import { type AnyPgColumn, bigint, boolean, index, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, bigint, boolean, index, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { activityLogs } from "./activityLogs";
 import { resourceStatusEnum } from "./enums";
 import { permissions } from "./permissions";
@@ -37,6 +37,8 @@ export const resources = pgTable(
 	},
 	// Indexes
 	(table) => [
+		index("idx_resources_status").on(table.status),
+		uniqueIndex("idx_resources_content_hash").on(table.contentHash),
 		index("idx_resources_parent_id").on(table.parentId),
 		index("idx_resources_owner_id").on(table.ownerId),
 		index("idx_resources_name_parent").on(table.parentId, table.name, table.ownerId),

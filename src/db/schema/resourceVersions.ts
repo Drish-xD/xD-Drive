@@ -26,7 +26,11 @@ export const resourceVersions = pgTable(
 		isCurrent: boolean().notNull().default(false),
 		createdAt: defaultTimestamps.createdAt,
 	},
-	(table) => [index("idx_versions_resource").on(table.resourceId), uniqueIndex("idx_versions_current").on(table.resourceId).where(eq(table.isCurrent, sql`true`))],
+	(table) => [
+		uniqueIndex("idx_resource_versions_number").on(table.versionNumber, table.resourceId),
+		index("idx_versions_resource").on(table.resourceId),
+		uniqueIndex("idx_versions_current").on(table.resourceId).where(eq(table.isCurrent, sql`true`)),
+	],
 );
 
 /**

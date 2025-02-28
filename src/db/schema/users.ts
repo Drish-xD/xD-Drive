@@ -1,5 +1,5 @@
 import { defaultTimestamps } from "@/db/lib";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { bigint, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { activityLogs } from "./activityLogs";
 import { userStatusEnum } from "./enums";
@@ -34,7 +34,7 @@ export const users = pgTable(
 		...defaultTimestamps,
 	},
 	// Indexes
-	(table) => [uniqueIndex("idx_users_email").on(table.email)],
+	(table) => [uniqueIndex("idx_users_email").on(sql`lower(${table.email})`)],
 );
 
 /**
