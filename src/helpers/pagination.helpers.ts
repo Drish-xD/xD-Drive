@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { z } from "@hono/zod-openapi";
-import type { Operators, OrderByOperators, TableRelationalConfig } from "drizzle-orm";
+import type { Operators, OrderByOperators, SQL, TableRelationalConfig } from "drizzle-orm";
 import type { PgTableWithColumns, TableConfig } from "drizzle-orm/pg-core";
 
 /**
@@ -108,7 +108,8 @@ export const createPaginationResponse = <T extends z.AnyZodObject>(dataSchema: T
 /**
  * Create a query builder to find total count for pagination
  */
-export const totalCountQueryBuilder = async <T extends TableConfig>(table: PgTableWithColumns<T>, includeTotal: boolean) => (includeTotal ? await db.$count(table) : undefined);
+export const totalCountQueryBuilder = async <T extends TableConfig>(table: PgTableWithColumns<T>, includeTotal: boolean, filters?: SQL<unknown>) =>
+	includeTotal ? await db.$count(table, filters) : undefined;
 
 /**
  * Create a order by clause for SQL query

@@ -81,13 +81,14 @@ export const deleteCurrentUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) 
  * Get Users Listing
  */
 export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
+	const db = ctx.get("db");
 	const { page, limit, offset, order, filters, includeTotal } = ctx.req.valid("query");
 
 	const orderBy = orderByQueryBuilder(order);
 	// const where = whereQueryBuilder(filters);
 
 	const [usersListing, totalCount] = await Promise.all([
-		ctx.var.db.query.users.findMany({
+		db.query.users.findMany({
 			columns: { passwordHash: false },
 			limit,
 			offset,

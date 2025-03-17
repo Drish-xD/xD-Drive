@@ -28,6 +28,8 @@ export const selectUserSchema = createSelectSchema(users).omit({ passwordHash: t
 
 export const insertUserSchema = createInsertSchema(users, {
 	email: (schema) => schema.email(),
+	fullName: (schema) => schema.min(1, { message: "Full name is required" }),
+	displayName: (schema) => schema.min(1, { message: "Display name is required" }),
 })
 	.pick({ email: true, fullName: true, displayName: true })
 	.extend({ password: z.string().min(8) })
@@ -42,6 +44,8 @@ export const insertUserSchema = createInsertSchema(users, {
 
 export const updateUserSchema = createUpdateSchema(users, {
 	email: (schema) => schema.email(),
+	fullName: (schema) => schema.min(1, { message: "Full name is required" }),
+	displayName: (schema) => schema.min(1, { message: "Display name is required" }),
 })
 	.pick({ email: true, fullName: true, displayName: true })
 	.partial()

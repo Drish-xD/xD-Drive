@@ -25,17 +25,24 @@ export const AUTH = {
 	// Email Verification
 	EMAIL_VERIFIED: "Email verified successfully!",
 	USER_ALREADY_VERIFIED: "User already verified",
-
-	// Password Reset
-	// FORGOT_PASSWORD_SENT: "Password reset email sent successfully!",
-	PASSWORD_RESET_SUCCESS: "Password reset successfully!",
-	// INVALID_PASSWORD_RESET_TOKEN: "Invalid or expired password reset token",
-	// PASSWORD_RESET_EMAIL_FAILED: "Password reset email could not be sent",
-	// PASSWORD_SAME_AS_OLD: "New password must be different from the old password",
 } as const;
 
 export const USER = {
 	DELETED_SUCCESS: "User deleted successfully!",
 	UPDATED_SUCCESS: "User updated successfully!",
 	NOT_FOUND: "User not found",
+} as const;
+
+export const RESOURCE = {
+	DELETED_SUCCESS: "Deleted successfully!",
+	CREATED_FOLDER_SUCCESS: "Folder created successfully!",
+	UPLOADED_FILE_SUCCESS: "File uploaded successfully!",
+	DOWNLOADED_FILE_SUCCESS: "File downloaded successfully!",
+	UPDATED_RESOURCE: "Metadata updated successfully!",
+	MOVED_SUCCESS: "Resource moved successfully!",
+	TRASHED_SUCCESS: "File/Folder trashed successfully!",
+	RESTORED_SUCCESS: "File/Folder restored successfully!",
+	NOT_FOUND: "Folder/File not found",
+
+	PARENT_NOT_FOUND: "Parent folder not found",
 } as const;

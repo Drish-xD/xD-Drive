@@ -33,7 +33,7 @@ export const createIdSchema = ({ description = "The ID of the item", example = 1
  * Create a JSON schema for hono-openAPI docs.
  * @param schema - Zod schema to create JSON.
  * @param description - Description for the openAPI.
- * @returns JSON  schema.
+ * @returns schema.
  */
 export const createJson = <T extends z.ZodType>({
 	schema,
@@ -45,6 +45,29 @@ export const createJson = <T extends z.ZodType>({
 	return {
 		content: {
 			"application/json": {
+				schema,
+			},
+		},
+		description,
+	};
+};
+
+/**
+ * Create a Multi-Part Form schema for hono-openAPI docs.
+ * @param schema - Zod schema to create JSON.
+ * @param description - Description for the openAPI.
+ * @returns schema.
+ */
+export const createMultiPartForm = <T extends z.ZodType>({
+	schema,
+	description,
+}: {
+	schema: T;
+	description: string;
+}) => {
+	return {
+		content: {
+			"multipart/form-data": {
 				schema,
 			},
 		},

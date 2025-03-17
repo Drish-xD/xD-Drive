@@ -1,18 +1,15 @@
 import { createApp } from "@/helpers/app.helpers";
-import auth from "./auth/auth.index";
-import check from "./check/check.index";
-import users from "./users/users.index";
-// import files from "./files";
-// import folders from "./folders";
-// import groups from "./groups";
-// import shares from "./shares";
+import authRoutes from "./auth/auth.index";
+import statusCheck from "./check/check.index";
+import permissionsRoutes from "./permissions/permissions.index";
+import resourcesRoutes from "./resources/resources.index";
+import userRoutes from "./users/users.index";
 
-// Mount all the routes to the app
-const app = createApp().route("/", check).route("/auth", auth).route("/users", users);
-// .route("/files", files)
-// .route("/folders", folders)
-// .route("/shares", shares)
-// .route("/users", users)
-// .route("/groups", groups);
+const app = createApp()
+	.route("/", statusCheck)
+	.route("/auth", authRoutes)
+	.route("/users", userRoutes)
+	.route("/permissions", permissionsRoutes)
+	.route("/resources", resourcesRoutes);
 
 export default app;
