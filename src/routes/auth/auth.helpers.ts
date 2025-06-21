@@ -1,9 +1,9 @@
-import { CONFIG } from "@/config";
-import type { TJWTPayload } from "@/helpers/types";
-import type { TUser } from "@/models";
 import { getUnixTime } from "date-fns";
 import { sign } from "hono/jwt";
 import type { CookieOptions } from "hono/utils/cookie";
+import { CONFIG } from "@/config";
+import type { TJWTPayload } from "@/helpers/types";
+import type { TUser } from "@/models";
 
 export const generateJwtTokens = async (id: TUser["id"]) => {
 	const currentTimeInSeconds = getUnixTime(new Date());

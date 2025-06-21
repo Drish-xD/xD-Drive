@@ -1,6 +1,6 @@
 import { HTTP_STATUSES } from "@/constants";
 import type { AppRouteHandler } from "@/helpers/types";
-import type { THealthCheckRoute, THomeRoute } from "./permissions.routes";
+import type { THealthCheckRoute, THomeRoute } from "./shares.routes";
 
 export const healthCheck: AppRouteHandler<THealthCheckRoute> = async (ctx) => {
 	const { command, rowCount } = await ctx.get("db").execute("Select 1");

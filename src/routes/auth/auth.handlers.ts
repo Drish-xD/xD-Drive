@@ -1,12 +1,12 @@
+import * as bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
+import { deleteCookie, setSignedCookie } from "hono/cookie";
+import { HTTPException } from "hono/http-exception";
 import { CONFIG, COOKIES } from "@/config";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { lower } from "@/db/lib";
 import { users } from "@/db/schema";
 import type { AppRouteHandler } from "@/helpers/types";
-import * as bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
-import { deleteCookie, setSignedCookie } from "hono/cookie";
-import { HTTPException } from "hono/http-exception";
 import { generateJwtTokens, setCookieOptions } from "./auth.helpers";
 import type { TLoginRoute, TLogoutRoute, TRefreshTokenRoute, TRegisterRoute, TVerifyEmailRoute } from "./auth.routes";
 

@@ -1,7 +1,7 @@
+import { HTTPException } from "hono/http-exception";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { type DB, db } from "@/db";
 import type { TResource } from "@/models";
-import { HTTPException } from "hono/http-exception";
 
 type TResourceTree = (TResource & { isFolder: true; children: TResourceTree[] }) | (TResource & { isFolder: false; children?: undefined });
 

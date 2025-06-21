@@ -1,12 +1,13 @@
-import { db } from "@/db";
-import { z } from "@hono/zod-openapi";
-import type { Operators, OrderByOperators, SQL, TableRelationalConfig } from "drizzle-orm";
+import { and, type OrderByOperators, type SQL, type TableRelationalConfig } from "drizzle-orm";
 import type { PgTableWithColumns, TableConfig } from "drizzle-orm/pg-core";
+import { db } from "@/db";
+import { type inferType, z } from "@/db/lib";
+import type { WhereBuilderConfig } from "./types";
 
 /**
  * Create a schema that can be used as seach query parameter.
  */
-const stringParse = <T extends z.ZodTypeAny>(schema: T) =>
+const stringParse = <T extends z.ZodType>(schema: T) =>
 	z.union([
 		schema,
 		z
@@ -21,14 +22,14 @@ const stringParse = <T extends z.ZodTypeAny>(schema: T) =>
 			.pipe(schema),
 	]);
 
-const orderBySchema = z
+export const orderBySchema = z
 	.object({
 		id: z.string(),
 		desc: z.boolean(),
 	})
 	.array()
 	.default([])
-	.openapi({ description: "Sorting order of the items", example: [{ id: "createdAt", desc: true }] });
+	.meta({ description: "Sorting order of the items", example: [{ id: "createdAt", desc: true }] });
 
 const filtersSchema = z
 	.object({
@@ -37,7 +38,19 @@ const filtersSchema = z
 	})
 	.array()
 	.default([])
-	.openapi({ description: "Filters applied to the items", example: [{ id: "column", value: "value" }] });
+	.meta({ description: "Filters applied to the items", example: [{ id: "column", value: "value" }] });
+
+type TFilter = inferType<typeof filtersSchema>[number];
+
+const metadataSchema = z.object({
+	currentPage: z.coerce.number().min(1).default(1).meta({ description: "Current page number", example: 1 }),
+	itemsPerPage: z.coerce.number().min(1).max(200).default(10).meta({ description: "Number of items per page", example: 10 }),
+	startIndex: z.coerce.number().min(0).meta({ description: "Starting index for the items", example: 0 }),
+	totalCount: z.coerce.number().min(0).optional().meta({ description: "Total number of items in the collection", example: 10 }),
+	pageCount: z.coerce.number().min(1).optional().meta({ description: "Total number of pages in the collection", example: 1 }),
+	sortOrder: orderBySchema,
+	appliedFilters: filtersSchema,
+});
 
 /**
  * Create a schema that can be used as seach query parameter.
@@ -45,63 +58,48 @@ const filtersSchema = z
 export const createPaginationQuery = () => {
 	return z
 		.object({
-			page: z.coerce.number().min(1).default(1).openapi({
+			page: z.coerce.number().min(1).default(1).meta({
 				description: "Page number",
 				example: 1,
 			}),
 			limit: z
 				.union([z.coerce.number().min(1).max(100), z.literal(-1)])
 				.default(10)
-				.openapi({
+				.meta({
 					description: "Items per page (-1 for all items)",
 					example: 10,
 				}),
-			offset: z.coerce.number().min(0).default(0).openapi({
+			offset: z.coerce.number().min(0).default(0).meta({
 				description: "Offset for the items (overrides page-based offset if provided)",
 				example: 0,
 			}),
 			order: stringParse(orderBySchema),
 			filters: stringParse(filtersSchema),
-			includeTotal: z
-				.enum(["true", "false"])
-				.transform((x) => x === "true")
-				.pipe(z.boolean())
-				.default("false")
-				.openapi({ description: "Include total count in the response", example: "false" }),
+			includeTotal: z.stringbool().default(false).meta({ description: "Include total count in the response", example: "false" }),
 		})
-		.superRefine((data) => {
-			if (data.limit === -1) {
-				data.page = 1;
-				data.offset = 0;
+		.transform((_, ctx) => {
+			if (ctx.value.limit === -1) {
+				ctx.value.page = 1;
+				ctx.value.offset = 0;
 			} else {
-				if (!data.offset) {
-					data.offset = (Number(data.page) - 1) * Number(data.limit);
+				if (!ctx.value.offset) {
+					ctx.value.offset = (Number(ctx.value.page) - 1) * Number(ctx.value.limit);
 				} else {
-					data.page = Math.floor(data.offset / Number(data.limit)) + 1;
+					ctx.value.page = Math.floor(ctx.value.offset / Number(ctx.value.limit)) + 1;
 				}
 			}
 
-			return data;
+			return ctx.value;
 		});
 };
-
-const metadataSchema = z.object({
-	currentPage: z.coerce.number().min(1).default(1).openapi({ description: "Current page number", example: 1 }),
-	itemsPerPage: z.coerce.number().min(1).max(200).default(10).openapi({ description: "Number of items per page", example: 10 }),
-	startIndex: z.coerce.number().min(0).openapi({ description: "Starting index for the items", example: 0 }),
-	totalCount: z.coerce.number().min(0).optional().openapi({ description: "Total number of items in the collection", example: 10 }),
-	pageCount: z.coerce.number().min(1).optional().openapi({ description: "Total number of pages in the collection", example: 1 }),
-	sortOrder: orderBySchema,
-	appliedFilters: filtersSchema,
-});
 
 /**
  * Create a schema for pagination response.
  */
-export const createPaginationResponse = <T extends z.AnyZodObject>(dataSchema: T) => {
+export const createPaginationResponse = <T extends z.ZodObject>(dataSchema: T) => {
 	return z.object({
-		meta: metadataSchema.openapi({ description: "meta data related to the pagination" }),
-		data: dataSchema.array().openapi({ description: "Array of requested items", example: [] }),
+		meta: metadataSchema.meta({ description: "meta data related to the pagination" }),
+		data: dataSchema.array().meta({ description: "Array of requested items" }),
 	});
 };
 
@@ -129,8 +127,19 @@ export const orderByQueryBuilder =
 /**
  * Create where clause using filters for SQL query
  */
-export const whereQueryBuilder =
-	<T extends TableConfig>(_filters: z.infer<typeof filtersSchema> = []) =>
-	(table: PgTableWithColumns<T>, operators: Operators) => {
-		return [];
-	};
+export const whereQueryBuilder = (filters: TFilter[], config: WhereBuilderConfig): SQL | undefined => {
+	if (!filters.length) return undefined;
+
+	const clauses = filters
+		.map((filter) => {
+			const conf = config[filter.id];
+			if (!conf) return undefined;
+
+			const value = conf.transform ? conf.transform(filter.value) : filter.value;
+
+			return conf.operator(conf.column, value);
+		})
+		.filter(Boolean);
+
+	return clauses.length ? and(...(clauses as SQL[])) : undefined;
+};

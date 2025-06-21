@@ -1,11 +1,11 @@
+import { reset } from "drizzle-seed";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
-import { reset } from "drizzle-seed";
 import { seedActivityLogs } from "./activityLogs";
-import { seedPermissions } from "./permissions";
+import { seedResourceShares } from "./resourceShares";
+import { seedResources } from "./resources";
 import { seedResourceTags } from "./resourceTags";
 import { seedResourceVersions } from "./resourceVersions";
-import { seedResources } from "./resources";
 import { seedTags } from "./tags";
 import { seedUsers } from "./users";
 
@@ -15,7 +15,7 @@ const seedDb = async () => {
 	await seedResources();
 	await seedResourceTags();
 	await seedResourceVersions();
-	await seedPermissions();
+	await seedResourceShares();
 	await seedActivityLogs();
 };
 

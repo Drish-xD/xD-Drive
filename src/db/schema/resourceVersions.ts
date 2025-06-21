@@ -1,6 +1,6 @@
-import { defaultTimestamps } from "@/db/lib";
 import { eq, relations, sql } from "drizzle-orm";
 import { bigint, boolean, index, integer, pgTable, text, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { defaultTimestamps } from "@/db/lib";
 import { resources } from "./resources";
 import { users } from "./users";
 

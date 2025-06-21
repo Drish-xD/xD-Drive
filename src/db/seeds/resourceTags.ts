@@ -1,9 +1,9 @@
+import { faker } from "@faker-js/faker";
+import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import type { PartialUnknown } from "@/db/lib";
 import { resourceTags } from "@/db/schema";
 import type { TInsertResourceTag } from "@/models";
-import { faker } from "@faker-js/faker";
-import { sql } from "drizzle-orm";
 
 const fakeTags = faker.helpers.multiple(
 	() =>

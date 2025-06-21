@@ -1,6 +1,6 @@
-import { defaultTimestamps } from "@/db/lib";
 import { relations } from "drizzle-orm";
 import { index, inet, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { defaultTimestamps } from "@/db/lib";
 import { activityTypeEnum } from "./enums";
 import { resources } from "./resources";
 import { users } from "./users";

@@ -1,7 +1,7 @@
+import { createRoute } from "@hono/zod-openapi";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { createErrorJson, createJson, createMessageSchema } from "@/helpers/schema.helpers";
 import { insertUserSchema, loginUserSchema, selectUserSchema } from "@/models";
-import { createRoute } from "@hono/zod-openapi";
 
 /**
  * Register User route

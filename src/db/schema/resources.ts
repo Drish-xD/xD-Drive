@@ -1,9 +1,9 @@
-import { defaultTimestamps } from "@/db/lib";
 import { relations } from "drizzle-orm";
 import { type AnyPgColumn, bigint, boolean, index, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { defaultTimestamps } from "@/db/lib";
 import { activityLogs } from "./activityLogs";
 import { resourceStatusEnum } from "./enums";
-import { permissions } from "./permissions";
+import { resourceShares } from "./resourceShares";
 import { resourceVersions } from "./resourceVersions";
 import { tags } from "./tags";
 import { users } from "./users";
@@ -59,7 +59,7 @@ export const resourcesRelations = relations(resources, ({ one, many }) => ({
 	}),
 	children: many(resources, { relationName: "parent" }),
 	versions: many(resourceVersions),
-	permissions: many(permissions),
+	shares: many(resourceShares),
 	tags: many(tags),
 	activityLogs: many(activityLogs),
 }));

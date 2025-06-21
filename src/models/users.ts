@@ -1,6 +1,6 @@
+import { z } from "@hono/zod-openapi";
 import { createInsertSchema, createSelectSchema, createUpdateSchema, type inferType } from "@/db/lib";
 import { users } from "@/db/schema";
-import { z } from "@hono/zod-openapi";
 
 /**
  * Example User
@@ -24,16 +24,17 @@ const userExample = {
 /**
  * Zod Schema
  */
-export const selectUserSchema = createSelectSchema(users).omit({ passwordHash: true }).openapi("User", { example: userExample });
+export const selectUserSchema = createSelectSchema(users).omit({ passwordHash: true }).meta({ title: "User", example: userExample });
 
 export const insertUserSchema = createInsertSchema(users, {
-	email: (schema) => schema.email(),
-	fullName: (schema) => schema.min(1, { message: "Full name is required" }),
-	displayName: (schema) => schema.min(1, { message: "Display name is required" }),
+	email: () => z.email({ error: "Invalid email address" }),
+	fullName: (schema) => schema.min(1, { error: "Full name is required" }),
+	displayName: (schema) => schema.min(1, { error: "Display name is required" }),
 })
 	.pick({ email: true, fullName: true, displayName: true })
 	.extend({ password: z.string().min(8) })
-	.openapi("InsertUser", {
+	.meta({
+		title: "InsertUser",
 		example: {
 			displayName: userExample.displayName,
 			email: userExample.email,
@@ -44,12 +45,13 @@ export const insertUserSchema = createInsertSchema(users, {
 
 export const updateUserSchema = createUpdateSchema(users, {
 	email: (schema) => schema.email(),
-	fullName: (schema) => schema.min(1, { message: "Full name is required" }),
-	displayName: (schema) => schema.min(1, { message: "Display name is required" }),
+	fullName: (schema) => schema.min(1, { error: "Full name is required" }),
+	displayName: (schema) => schema.min(1, { error: "Display name is required" }),
 })
 	.pick({ email: true, fullName: true, displayName: true })
 	.partial()
-	.openapi("UpdateUser", {
+	.meta({
+		title: "UpdateUser",
 		example: {
 			displayName: userExample.displayName,
 			fullName: userExample.fullName,
@@ -62,7 +64,8 @@ export const loginUserSchema = insertUserSchema
 		email: true,
 		password: true,
 	})
-	.openapi("LoginUser", {
+	.meta({
+		title: "LoginUser",
 		example: {
 			email: userExample.email,
 			password: userExample.password,

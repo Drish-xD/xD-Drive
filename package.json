@@ -14,33 +14,32 @@
 		"build": "bun run scripts/build.ts",
 		"start": "bun run dist/index.js",
 		"check": "biome check --fix",
-		"drizzle:seed": "bun run ./src/db/seeds/index.ts",
-		"drizzle": "drizzle-kit",
+		"db:seed": "bun run ./src/db/seeds/index.ts",
+		"db": "drizzle-kit",
 		"update:statuses": "bun run scripts/update-http-statuses.ts"
 	},
 	"dependencies": {
-		"@hono/swagger-ui": "^0.5.0",
-		"@neondatabase/serverless": "^0.10.4",
-		"@scalar/hono-api-reference": "^0.5.175",
+		"@scalar/hono-api-reference": "^0.9.6",
 		"bcryptjs": "^3.0.2",
 		"date-fns": "^4.1.0",
-		"drizzle-orm": "^0.40.0",
-		"drizzle-zod": "^0.7.0",
-		"hono": "^4.7.2",
-		"hono-pino": "^0.7.2",
-		"pino": "^9.6.0",
+		"drizzle-orm": "^0.44.2",
+		"drizzle-zod": "^0.8.2",
+		"hono": "^4.8.2",
+		"hono-pino": "^0.8.0",
+		"pino": "^9.7.0",
 		"pino-pretty": "^13.0.0",
-		"ts-morph": "^25.0.1",
-		"zod": "^3.24.2"
+		"postgres": "^3.4.7",
+		"ts-morph": "^26.0.0",
+		"zod": "^3.25.67"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@faker-js/faker": "^9.5.0",
-		"@hono/zod-openapi": "^0.19.0",
-		"@types/bcryptjs": "^2.4.6",
-		"@types/bun": "^1.2.4",
-		"drizzle-kit": "^0.30.5",
+		"@biomejs/biome": "2.0.4",
+		"@faker-js/faker": "^9.8.0",
+		"@hono/zod-openapi": "^1.0.0-beta.1",
+		"@types/bcryptjs": "^3.0.0",
+		"@types/bun": "^1.2.17",
+		"drizzle-kit": "^0.31.1",
 		"drizzle-seed": "^0.3.1",
-		"vercel": "^41.3.0"
+		"vercel": "^43.3.0"
 	}
 }

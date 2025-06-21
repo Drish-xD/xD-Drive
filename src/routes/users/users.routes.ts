@@ -1,8 +1,8 @@
+import { createRoute } from "@hono/zod-openapi";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { createPaginationQuery, createPaginationResponse } from "@/helpers/pagination.helpers";
 import { createErrorJson, createJson, createMessageSchema, createUuidSchema } from "@/helpers/schema.helpers";
 import { selectUserSchema, updateUserSchema } from "@/models";
-import { createRoute } from "@hono/zod-openapi";
 
 /**
  * Current User route

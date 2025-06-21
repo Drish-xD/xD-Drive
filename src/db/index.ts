@@ -1,7 +1,15 @@
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { CONFIG } from "@/config";
-import { drizzle } from "drizzle-orm/neon-serverless";
 import * as schema from "./schema";
 
-export const db = drizzle(CONFIG.DATABASE_URL, { schema, casing: "snake_case", logger: CONFIG.DATABASE_LOGGING });
+const client = postgres(CONFIG.DATABASE_URL, { prepare: false });
+
+export const db = drizzle({
+	client,
+	schema,
+	casing: "snake_case",
+	logger: CONFIG.DATABASE_LOGGING,
+});
 
 export type DB = typeof db;

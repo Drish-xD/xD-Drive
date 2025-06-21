@@ -1,6 +1,6 @@
-import { handleZodError } from "@/middleware/on-error.middleware";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { apiReference } from "@scalar/hono-api-reference";
+import { Scalar } from "@scalar/hono-api-reference";
+import { handleZodError } from "@/middleware/on-error.middleware";
 import packageJSON from "../../package.json";
 import type { AppBindings, AppInstance } from "./types";
 
@@ -12,12 +12,11 @@ export const createApp = () => {
 };
 
 export const initOpenAPI = (app: AppInstance) => {
-	// initialize the OpenAPI specification
-	app.doc31("/docs/openapi", {
+	app.doc("/docs/meta", {
 		openapi: "3.1.0",
 		info: {
-			title: packageJSON.description,
 			version: packageJSON.version,
+			title: packageJSON.description,
 			description: packageJSON.description,
 			contact: packageJSON.author,
 			license: {
@@ -30,12 +29,10 @@ export const initOpenAPI = (app: AppInstance) => {
 	// initialize the API reference
 	app.get(
 		"/docs",
-		apiReference({
-			theme: "default",
-			layout: "classic",
-			spec: {
-				url: "/docs/openapi",
-			},
+		Scalar({
+			theme: "saturn",
+			layout: "modern",
+			url: "/docs/meta",
 		}),
 	);
 

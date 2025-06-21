@@ -1,9 +1,9 @@
+import { and, eq, ilike, isNull } from "drizzle-orm";
+import { HTTPException } from "hono/http-exception";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { users as usersTable } from "@/db/schema";
-import { orderByQueryBuilder, totalCountQueryBuilder } from "@/helpers/pagination.helpers";
+import { orderByQueryBuilder, totalCountQueryBuilder, whereQueryBuilder } from "@/helpers/pagination.helpers";
 import type { AppRouteHandler } from "@/helpers/types";
-import { and, eq, isNull } from "drizzle-orm";
-import { HTTPException } from "hono/http-exception";
 import type { TDeleteUserRoute, TUpdateUserRoute, TUserRoute, TUsersMeRoute, TUsersRoute } from "./users.routes";
 
 /**
@@ -85,7 +85,16 @@ export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
 	const { page, limit, offset, order, filters, includeTotal } = ctx.req.valid("query");
 
 	const orderBy = orderByQueryBuilder(order);
-	// const where = whereQueryBuilder(filters);
+	const where = whereQueryBuilder(filters, {
+		email: {
+			column: usersTable.email,
+			operator: eq,
+		},
+		fullName: {
+			column: usersTable.fullName,
+			operator: (column, value) => ilike(column, `%${value}%`),
+		},
+	});
 
 	const [usersListing, totalCount] = await Promise.all([
 		db.query.users.findMany({
@@ -93,9 +102,9 @@ export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
 			limit,
 			offset,
 			orderBy,
-			// where: (users, fn) => where(users, fn),
+			where,
 		}),
-		totalCountQueryBuilder(usersTable, includeTotal),
+		totalCountQueryBuilder(usersTable, includeTotal, where),
 	]);
 
 	const pageCount = Math.ceil((totalCount ?? usersListing.length) / limit);

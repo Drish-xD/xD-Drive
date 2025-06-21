@@ -1,10 +1,10 @@
+import { faker } from "@faker-js/faker";
+import bcrypt from "bcryptjs";
 import { CONFIG } from "@/config";
 import { db } from "@/db";
 import type { PartialUnknown } from "@/db/lib";
 import { users } from "@/db/schema";
 import type { TInsertUser } from "@/models";
-import { faker } from "@faker-js/faker";
-import bcrypt from "bcryptjs";
 
 const fakeUsers = faker.helpers.multiple(
 	() => {

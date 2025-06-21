@@ -5,11 +5,11 @@ import { activityLogs } from "@/db/schema";
  * Activity Logs Schema
  */
 
-export const selectActivityLogSchema = createSelectSchema(activityLogs).openapi("ActivityLog");
+export const selectActivityLogSchema = createSelectSchema(activityLogs).meta({ title: "ActivityLog" });
 
-export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({ id: true, createdAt: true }).openapi("InsertActivityLog");
+export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({ id: true, createdAt: true }).meta({ title: "InsertActivityLog" });
 
-export const updateActivityLogSchema = createUpdateSchema(activityLogs).omit({ id: true, createdAt: true }).partial().openapi("UpdateActivityLog");
+export const updateActivityLogSchema = createUpdateSchema(activityLogs).omit({ id: true, createdAt: true }).partial().meta({ title: "UpdateActivityLog" });
 
 export type TActivityLog = inferType<typeof selectActivityLogSchema>;
 export type TInsertActivityLog = inferType<typeof insertActivityLogSchema>;

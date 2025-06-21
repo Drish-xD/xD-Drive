@@ -4,11 +4,11 @@ import { resourceTags } from "@/db/schema";
 /**
  * Resource Tags Schema
  */
-export const selectResourceTagSchema = createSelectSchema(resourceTags).openapi("ResourceTag");
+export const selectResourceTagSchema = createSelectSchema(resourceTags).meta({ title: "ResourceTag" });
 
-export const insertResourceTagSchema = createInsertSchema(resourceTags).omit({ createdAt: true }).openapi("InsertResourceTag");
+export const insertResourceTagSchema = createInsertSchema(resourceTags).omit({ createdAt: true }).meta({ title: "InsertResourceTag" });
 
-export const updateResourceTagSchema = createUpdateSchema(resourceTags).omit({ createdAt: true }).partial().openapi("UpdateResourceTag");
+export const updateResourceTagSchema = createUpdateSchema(resourceTags).omit({ createdAt: true }).partial().meta({ title: "UpdateResourceTag" });
 
 export type TResourceTag = inferType<typeof selectResourceTagSchema>;
 export type TInsertResourceTag = inferType<typeof insertResourceTagSchema>;

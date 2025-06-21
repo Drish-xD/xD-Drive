@@ -1,7 +1,7 @@
-import { db } from "@/db";
-import { resourceStatusEnum, resources } from "@/db/schema";
 import { faker } from "@faker-js/faker";
 import { sql } from "drizzle-orm";
+import { db } from "@/db";
+import { resourceStatusEnum, resources } from "@/db/schema";
 
 const fakeResources = faker.helpers.multiple(
 	() => {

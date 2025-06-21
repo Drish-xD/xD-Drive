@@ -1,11 +1,11 @@
-import { db } from "@/db";
-import type { PartialUnknown } from "@/db/lib";
-import { accessLevelEnum, permissions } from "@/db/schema";
-import type { TInsertPermission } from "@/models";
 import { faker } from "@faker-js/faker";
 import { sql } from "drizzle-orm";
+import { db } from "@/db";
+import type { PartialUnknown } from "@/db/lib";
+import { accessLevelEnum, resourceShares } from "@/db/schema";
+import type { TInsertResourceShare } from "@/models";
 
-const fakePermissions = faker.helpers.multiple(
+const fakeResourceShares = faker.helpers.multiple(
 	() => {
 		const isPublic = faker.datatype.boolean();
 
@@ -17,18 +17,18 @@ const fakePermissions = faker.helpers.multiple(
 			grantedTo: isPublic ? sql`NULL` : sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
 			createdBy: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
 			resourceId: sql`(SELECT id FROM resources ORDER BY RANDOM() LIMIT 1)`,
-		} satisfies PartialUnknown<TInsertPermission>;
+		} satisfies PartialUnknown<TInsertResourceShare>;
 	},
 	{ count: 10 },
 );
 
-export const seedPermissions = async () => {
-	console.info("\n*** Seeding Permissions ***\n");
+export const seedResourceShares = async () => {
+	console.info("\n*** Seeding Resource Shares ***\n");
 	console.info("\nStarting...");
 
 	await db
-		.insert(permissions)
-		.values(fakePermissions)
+		.insert(resourceShares)
+		.values(fakeResourceShares)
 		.then(() => console.info("Completed! ✅"))
 		.catch((e) => console.error("Error ❌ :", e));
 };

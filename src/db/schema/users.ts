@@ -1,11 +1,11 @@
-import { defaultTimestamps, lower } from "@/db/lib";
 import { relations } from "drizzle-orm";
 import { bigint, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { defaultTimestamps, lower } from "@/db/lib";
 import { activityLogs } from "./activityLogs";
 import { userStatusEnum } from "./enums";
-import { permissions } from "./permissions";
-import { resourceVersions } from "./resourceVersions";
+import { resourceShares } from "./resourceShares";
 import { resources } from "./resources";
+import { resourceVersions } from "./resourceVersions";
 import { tags } from "./tags";
 
 const STORAGE_QUOTA = 1073741824; // 1GB in bytes
@@ -43,8 +43,8 @@ export const users = pgTable(
 export const usersRelations = relations(users, ({ many }) => ({
 	resources: many(resources),
 	createdVersions: many(resourceVersions, { relationName: "createdBy" }),
-	permissions: many(permissions, { relationName: "grantedTo" }),
-	createdPermissions: many(permissions, { relationName: "createdBy" }),
+	shares: many(resourceShares, { relationName: "grantedTo" }),
+	createdShares: many(resourceShares, { relationName: "createdBy" }),
 	createdTags: many(tags),
 	activityLogs: many(activityLogs),
 }));

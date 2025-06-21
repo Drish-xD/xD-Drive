@@ -1,6 +1,6 @@
-import { defaultTimestamps } from "@/db/lib";
 import { isNotNull, relations, sql } from "drizzle-orm";
 import { boolean, check, index, pgTable, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { defaultTimestamps } from "@/db/lib";
 import { accessLevelEnum } from "./enums";
 import { resources } from "./resources";
 import { users } from "./users";
@@ -8,8 +8,8 @@ import { users } from "./users";
 /**
  * Table Definition
  */
-export const permissions = pgTable(
-	"permissions",
+export const resourceShares = pgTable(
+	"resource_shares",
 	{
 		id: uuid().primaryKey().defaultRandom(),
 		resourceId: uuid()
@@ -31,28 +31,28 @@ export const permissions = pgTable(
 
 	(table) => [
 		// Indexes & Constraints
-		check("check_valid_permission", sql`(${table.isPublic} = true AND ${table.grantedTo} IS NULL) OR (${table.isPublic} = false AND ${table.grantedTo} IS NOT NULL)`),
-		index("idx_permissions_resource").on(table.resourceId),
-		index("idx_permissions_user").on(table.grantedTo).where(isNotNull(table.grantedTo)),
-		uniqueIndex("idx_permissions_public_link").on(table.publicLinkToken).where(isNotNull(table.publicLinkToken)),
+		check("check_valid_resource_share", sql`(${table.isPublic} = true AND ${table.grantedTo} IS NULL) OR (${table.isPublic} = false AND ${table.grantedTo} IS NOT NULL)`),
+		index("idx_resource_shares_resource").on(table.resourceId),
+		index("idx_resource_shares_user").on(table.grantedTo).where(isNotNull(table.grantedTo)),
+		uniqueIndex("idx_resource_shares_public_link").on(table.publicLinkToken).where(isNotNull(table.publicLinkToken)),
 	],
 );
 
 /**
  * Relations
  */
-export const permissionsRelations = relations(permissions, ({ one }) => ({
+export const resourceSharesRelations = relations(resourceShares, ({ one }) => ({
 	resource: one(resources, {
-		fields: [permissions.resourceId],
+		fields: [resourceShares.resourceId],
 		references: [resources.id],
 	}),
 	grantedToUser: one(users, {
-		fields: [permissions.grantedTo],
+		fields: [resourceShares.grantedTo],
 		references: [users.id],
 		relationName: "granted",
 	}),
 	creator: one(users, {
-		fields: [permissions.createdBy],
+		fields: [resourceShares.createdBy],
 		references: [users.id],
 		relationName: "creator",
 	}),

@@ -6,7 +6,7 @@ const app = createApp()
 	.openapi(routes.resources, handlers.resources)
 	.openapi(routes.resource, handlers.resource)
 	.openapi(routes.createFolder, handlers.createFolder)
-	.openapi(routes.uploadFile, handlers.uploadFile)
+	// .openapi(routes.uploadFile, handlers.uploadFile)
 	.openapi(routes.deleteResource, handlers.deleteResource);
 
 export default app;

@@ -1,7 +1,7 @@
-import { HTTP_STATUSES } from "@/constants";
-import type { TError } from "@/helpers/types";
 import type { NotFoundHandler } from "hono";
 import type { z } from "zod";
+import { HTTP_STATUSES } from "@/constants";
+import type { TError } from "@/helpers/types";
 
 type TNotFoundError = TError<z.ZodObject<{ path: z.ZodString; method: z.ZodString }>>;
 

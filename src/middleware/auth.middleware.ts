@@ -1,9 +1,9 @@
-import { CONFIG, COOKIES, UNPROTECTED_ROUTES_REGEX } from "@/config";
-import { HTTP_STATUSES, MESSAGES } from "@/constants";
-import type { AppBindings } from "@/helpers/types";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { jwt } from "hono/jwt";
+import { CONFIG, COOKIES, UNPROTECTED_ROUTES_REGEX } from "@/config";
+import { HTTP_STATUSES, MESSAGES } from "@/constants";
+import type { AppBindings } from "@/helpers/types";
 
 export const verifyAccessToken = () =>
 	createMiddleware<AppBindings>(async (ctx, next) => {

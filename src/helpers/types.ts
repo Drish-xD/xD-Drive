@@ -1,11 +1,14 @@
-import type { HTTP_STATUSES } from "@/constants";
-import type { DB } from "@/db";
-import type { TUser } from "@/models";
-import { type OpenAPIHono, type RouteConfig, type RouteHandler, z } from "@hono/zod-openapi";
-import type { PinoLogger } from "hono-pino";
+import type { OpenAPIHono, RouteConfig, RouteHandler } from "@hono/zod-openapi";
+import type { Column, SQL } from "drizzle-orm";
 import type { StatusCode } from "hono/utils/http-status";
 import type { JWTPayload } from "hono/utils/jwt/types";
+import type { PinoLogger } from "hono-pino";
+import type { HTTP_STATUSES } from "@/constants";
+import type { DB } from "@/db";
+import { z } from "@/db/lib";
+import type { TUser } from "@/models";
 import type { createErrorSchema } from "./schema.helpers";
+
 export type { StatusCode } from "hono/utils/http-status";
 
 export type TJWTPayload = JWTPayload & { id: string };
@@ -29,19 +32,11 @@ export type StatusCodeText = keyof typeof HTTP_STATUSES;
 
 // SCHEMA
 const zodIssueSchema = z.object({
-	issues: z.record(z.string(), z.string().array().optional()).openapi({ example: { field_1: ["issue_1", "issue_2"] } }),
-	name: z.string().openapi({ example: "ZodErrors" }),
+	issues: z.record(z.string(), z.string().array().optional()).meta({ example: { field_1: ["issue_1", "issue_2"] } }),
+	name: z.string().meta({ example: "ZodErrors" }),
 });
 
-// SCHMEA TYPES
-export type TDescriptionExample<T = string> = {
-	description?: string;
-	example?: T;
-};
-
-const EmptyObject = z.object({});
-
-export type TError<T extends z.AnyZodObject = typeof EmptyObject> = z.infer<ReturnType<typeof createErrorSchema<T>>>;
+export type TError<T extends z.ZodObject = z.ZodObject> = z.infer<ReturnType<typeof createErrorSchema<T>>>;
 
 export type TValidationError = TError<typeof zodIssueSchema>;
 
@@ -58,6 +53,14 @@ type BaseExample = {
 	error?: BaseErrorFields;
 };
 
-export type TExample<T extends z.ZodType = z.ZodType> = BaseExample & {
+export type TExample<T extends z.ZodObject = z.ZodObject> = BaseExample & {
 	error?: BaseErrorFields & Partial<z.infer<T>>;
+};
+
+export type WhereBuilderConfig = {
+	[key: string]: {
+		column: Column;
+		operator: (column: Column, value: unknown) => SQL;
+		transform?: (val: string) => unknown;
+	};
 };
