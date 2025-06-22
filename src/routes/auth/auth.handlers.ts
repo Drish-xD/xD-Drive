@@ -1,13 +1,14 @@
-import { CONFIG, COOKIES } from "@/config";
-import { HTTP_STATUSES, MESSAGES } from "@/constants";
-import { users } from "@/db/schema";
-import type { AppRouteHandler } from "@/helpers/types";
 import * as bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { deleteCookie, setSignedCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
+import { CONFIG, COOKIES } from "@/config";
+import { HTTP_STATUSES, MESSAGES } from "@/constants";
+import { lower } from "@/db/lib";
+import { users } from "@/db/schema";
+import type { AppRouteHandler } from "@/helpers/types";
 import { generateJwtTokens, setCookieOptions } from "./auth.helpers";
-import type { TForgotPasswordRoute, TLoginRoute, TLogoutRoute, TRefreshTokenRoute, TRegisterRoute, TResetPasswordRoute, TVerifyEmailRoute } from "./auth.routes";
+import type { TLoginRoute, TLogoutRoute, TRefreshTokenRoute, TRegisterRoute, TVerifyEmailRoute } from "./auth.routes";
 
 /**
  * Register User
@@ -16,13 +17,13 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 	const { password, email, ...body } = ctx.req.valid("json");
 
 	const checkUser = await ctx.var.db.query.users.findFirst({
-		where: (users, fn) => fn.eq(users.email, email),
 		columns: { id: true },
+		where: (users, fn) => fn.eq(lower(users.email), email.toLowerCase()),
 	});
 
 	if (checkUser) {
 		throw new HTTPException(HTTP_STATUSES.CONFLICT.CODE, {
-			cause: "auth.handlers.register#001",
+			cause: "auth.handlers@register#001",
 			message: MESSAGES.AUTH.USER_ALREADY_EXISTS,
 		});
 	}
@@ -42,16 +43,17 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
  */
 export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 	const { password, email } = ctx.req.valid("json");
+	const db = ctx.get("db");
 
-	const checkUser = await ctx.var.db.query.users.findFirst({
-		where: (users, fn) => fn.eq(users.email, email),
-		columns: { passwordHash: true, id: true },
+	const checkUser = await db.query.users.findFirst({
+		columns: { id: true, passwordHash: true },
+		where: (users, fn) => fn.eq(lower(users.email), email.toLowerCase()),
 	});
 
 	if (!checkUser) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
+			cause: "auth.handlers@login#001",
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
-			cause: "auth.handlers.login#001",
 		});
 	}
 
@@ -59,8 +61,8 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 
 	if (!isValid) {
 		throw new HTTPException(HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE, {
+			cause: "auth.handlers@login#002",
 			message: MESSAGES.AUTH.INVALID_CREDENTIALS,
-			cause: "auth.handlers.login#002",
 		});
 	}
 
@@ -81,16 +83,9 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
  * Refresh Token
  */
 export const refreshToken: AppRouteHandler<TRefreshTokenRoute> = async (ctx) => {
-	const payload = ctx.get("jwtPayload");
+	const userDetails = ctx.get("userData");
 
-	if (!payload?.id) {
-		throw new HTTPException(HTTP_STATUSES.UNAUTHORIZED.CODE, {
-			message: MESSAGES.AUTH.INVALID_REFRESH_TOKEN,
-			cause: "auth.handlers.refreshToken#001",
-		});
-	}
-
-	const { accessToken, refreshToken } = await generateJwtTokens(payload?.id);
+	const { accessToken, refreshToken } = await generateJwtTokens(userDetails.id);
 
 	await setSignedCookie(ctx, COOKIES.ACCESS_TOKEN, accessToken, CONFIG.COOKIE_SECRET, setCookieOptions.accessToken);
 	await setSignedCookie(ctx, COOKIES.REFRESH_TOKEN, refreshToken, CONFIG.COOKIE_SECRET, setCookieOptions.refreshToken);
@@ -125,8 +120,8 @@ export const verifyEmail: AppRouteHandler<TVerifyEmailRoute> = async (ctx) => {
 	const userData = ctx.get("userData");
 	if (userData?.emailVerifiedAt) {
 		throw new HTTPException(HTTP_STATUSES.CONFLICT.CODE, {
+			cause: "auth.handlers@verifyEmail#001",
 			message: MESSAGES.AUTH.USER_ALREADY_VERIFIED,
-			cause: "auth.handlers.verifyEmail#001",
 		});
 	}
 
@@ -135,32 +130,6 @@ export const verifyEmail: AppRouteHandler<TVerifyEmailRoute> = async (ctx) => {
 	return ctx.json(
 		{
 			message: MESSAGES.AUTH.EMAIL_VERIFIED,
-		},
-		HTTP_STATUSES.OK.CODE,
-	);
-};
-
-/**
- * Forgot User Password
- */
-export const forgotPassword: AppRouteHandler<TForgotPasswordRoute> = (ctx) => {
-	// TODO: TO BE IMPLEMENTED
-	return ctx.json(
-		{
-			message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
-		},
-		HTTP_STATUSES.OK.CODE,
-	);
-};
-
-/**
- * Reset User Password
- */
-export const resetPassword: AppRouteHandler<TResetPasswordRoute> = (ctx) => {
-	// TODO: TO BE IMPLEMENTED
-	return ctx.json(
-		{
-			message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
 		},
 		HTTP_STATUSES.OK.CODE,
 	);

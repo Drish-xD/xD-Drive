@@ -1,5 +1,5 @@
-import type { AppBindings } from "@/helpers/types";
 import { createMiddleware } from "hono/factory";
+import type { AppBindings } from "@/helpers/types";
 
 /**
  * Serve a favicon with an emoji

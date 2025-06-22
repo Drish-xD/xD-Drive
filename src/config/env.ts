@@ -7,6 +7,7 @@ const strToBoolean = z.coerce
 	.default("false");
 
 const configSchema = z
+	// biome-ignore assist/source/useSortedKeys: we need to keep the order of the keys
 	.object({
 		PORT: z.coerce.number().default(3000),
 		APP_ENV: z.enum(["prod", "test", "dev"]).default("dev"),
@@ -27,6 +28,10 @@ const configSchema = z
 		DATABASE_URL: z.string(),
 		DATABASE_LOGGING: strToBoolean,
 		SALT_ROUNDS: z.coerce.number().default(10),
+
+		// STORAGE
+		SUPABASE_URL: z.string(),
+		SUPABASE_ANON_KEY: z.string(),
 	})
 	.superRefine((data) => {
 		data.IsProd = data.APP_ENV === "prod";

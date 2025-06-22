@@ -3,15 +3,14 @@ import type { AppRouteHandler } from "@/helpers/types";
 import type { THealthCheckRoute, THomeRoute } from "./check.routes";
 
 export const healthCheck: AppRouteHandler<THealthCheckRoute> = async (ctx) => {
-	const { command, rowCount } = await ctx.get("db").execute("Select 1");
+	const res = await ctx.get("db").execute("Select 1");
 
 	return ctx.json(
 		{
-			message: "API and DB connection is healthy",
 			data: {
-				command,
-				rowCount,
+				command: res.statement.string,
 			},
+			message: "API and DB connection is healthy",
 		},
 		HTTP_STATUSES.OK.CODE,
 	);

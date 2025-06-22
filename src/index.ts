@@ -12,6 +12,6 @@ initOpenAPI(app);
 app.route("/", routes);
 
 export default {
-	port: CONFIG.PORT,
 	fetch: app.fetch,
+	port: CONFIG.PORT,
 };

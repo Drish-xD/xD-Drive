@@ -1,19 +1,19 @@
 {
 	"compilerOptions": {
+		"baseUrl": "./",
+		"esModuleInterop": true,
 		"jsx": "react-jsx",
 		"jsxImportSource": "hono/jsx",
-		"target": "ESNext",
 		"module": "ESNext",
 		"moduleResolution": "bundler",
+		"noErrorTruncation": true,
 		"outDir": "./dist",
-		"baseUrl": "./",
 		"paths": {
 			"@/*": ["./src/*"]
 		},
-		"types": ["node"],
 		"resolveJsonModule": true,
-		"esModuleInterop": true,
 		"strict": true,
-		"noErrorTruncation": true
+		"target": "ESNext",
+		"types": ["node"]
 	}
 }

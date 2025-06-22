@@ -1,23 +1,23 @@
+import { createRoute } from "@hono/zod-openapi";
 import { HTTP_STATUSES } from "@/constants";
+import { z } from "@/db/lib";
 import { createErrorSchema, createJson, createMessageSchema } from "@/helpers/schema.helpers";
-import { createRoute, z } from "@hono/zod-openapi";
 
 export const home = createRoute({
-	path: "/",
 	method: "get",
-	tags: ["Internal"],
+	path: "/",
 	responses: {
-		200: createJson({
+		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Home route",
 			schema: createMessageSchema({ example: "Hello World!" }),
 		}),
 	},
+	tags: ["Internal"],
 });
 
 export const healthCheck = createRoute({
-	path: "/health",
 	method: "get",
-	tags: ["Internal"],
+	path: "/health",
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Health check route to check the API and DB connection",
@@ -26,8 +26,7 @@ export const healthCheck = createRoute({
 				example: "API and DB connection is healthy",
 			}).extend({
 				data: z.object({
-					command: z.string().openapi({ description: "Command used to check", example: "SELECT 1" }),
-					rowCount: z.number().openapi({ description: "Number of rows returned", example: 1 }),
+					command: z.string().meta({ description: "Command used to check", example: "SELECT 1" }),
 				}),
 			}),
 		}),
@@ -36,6 +35,7 @@ export const healthCheck = createRoute({
 			schema: createErrorSchema(),
 		}),
 	},
+	tags: ["Internal"],
 });
 
 export type THomeRoute = typeof home;

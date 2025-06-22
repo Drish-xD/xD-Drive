@@ -1,31 +1,32 @@
+import type { JSONSchemaMeta } from "zod/v4/core";
 import { HTTP_STATUSES } from "@/constants";
-import { z } from "@hono/zod-openapi";
-import type { StatusCode, StatusCodeText, TDescriptionExample, TExample } from "./types";
+import { z } from "@/db/lib";
+import type { StatusCode, StatusCodeText, TExample } from "./types";
 
 /**
  * Create a message schema with description and example.
  */
-export const createMessageSchema = ({ description = "The message to return", example = "Hello world!" }: TDescriptionExample = {}) => {
+export const createMessageSchema = (metaOptions: JSONSchemaMeta = { description: "The message to return", example: "Hello world!" }) => {
 	return z.object({
-		message: z.string().openapi({ description, example }),
+		message: z.string().meta(metaOptions),
 	});
 };
 
 /**
  * Create a UUID schema with description and example.
  */
-export const createUuidSchema = ({ description = "The UUID of the item", example = "123e4567-e89b-12d3-a456-426614174000" }: TDescriptionExample = {}) => {
+export const createUuidSchema = (metaOptions: JSONSchemaMeta = { description: "The UUID of the item", example: "123e4567-e89b-12d3-a456-426614174000" }) => {
 	return z.object({
-		id: z.string().uuid().openapi({ description, example }),
+		id: z.uuid({ error: "ID is required" }).meta(metaOptions),
 	});
 };
 
 /**
  * Create a ID schema with description and example.
  */
-export const createIdSchema = ({ description = "The ID of the item", example = 1 }: TDescriptionExample<number> = {}) => {
+export const createIdSchema = (metaOptions: JSONSchemaMeta = { description: "The ID of the item", example: 1 }) => {
 	return z.object({
-		id: z.coerce.number().openapi({ description, example }),
+		id: z.coerce.number().meta(metaOptions),
 	});
 };
 
@@ -33,19 +34,30 @@ export const createIdSchema = ({ description = "The ID of the item", example = 1
  * Create a JSON schema for hono-openAPI docs.
  * @param schema - Zod schema to create JSON.
  * @param description - Description for the openAPI.
- * @returns JSON  schema.
+ * @returns schema.
  */
-export const createJson = <T extends z.ZodType>({
-	schema,
-	description,
-}: {
-	schema: T;
-	description: string;
-}) => {
+export const createJson = <T extends z.ZodType>({ schema, description }: { schema: T; description: string }) => {
 	return {
 		content: {
 			"application/json": {
 				schema,
+			},
+		},
+		description,
+	};
+};
+
+/**
+ * Create a Multi-Part Form schema for hono-openAPI docs.
+ * @param schema - Zod schema to create JSON.
+ * @param description - Description for the openAPI.
+ * @returns schema.
+ */
+export const createMultiPartForm = <T extends z.ZodType>({ schema, description }: { schema: T; description: string }) => {
+	return {
+		content: {
+			"multipart/form-data": {
+				schema: schema,
 			},
 		},
 		description,
@@ -58,21 +70,37 @@ export const createJson = <T extends z.ZodType>({
  * @param example - Example for the error schema.
  * @returns JSON schema.
  */
-export const createErrorSchema = <T extends z.AnyZodObject = z.SomeZodObject>({ example, extendedError }: { extendedError?: T; example?: TExample<T> } = {}) => {
+export const createErrorSchema = <T extends z.ZodObject = z.ZodObject>({ example, extendedError }: { extendedError?: T; example?: TExample<T> } = {}) => {
 	const baseError = z.object({
-		status: z.custom<StatusCode>().openapi({ description: "Error status code to trace the error.", example: example?.status ?? 500 }),
-		statusText: z.custom<StatusCodeText>().openapi({ description: "Status text based on the status code.", example: example?.statusText ?? "INTERNAL_SERVER_ERROR" }),
-		error: z.object({
-			code: z.string().openapi({ description: "Traceable error code. - [route_path]@[function]#[unique_code]", example: example?.error?.code ?? "folder.file@function#001" }),
-			message: z.string().openapi({ description: "Error message.", example: example?.error?.message ?? "Some message related to the error." }),
-			stack: z
-				.string()
-				.optional()
-				.openapi({ description: "Stack trace of the error.", example: example?.error?.stack ?? "xyz" }),
+		code: z.string().meta({
+			description: "Traceable error code. - [route_path]@[function]#[unique_code]",
+			example: example?.error?.code ?? "folder.file@function#001",
+		}),
+		message: z.string().meta({
+			description: "Error message.",
+			example: example?.error?.message ?? "Some message related to the error.",
+		}),
+		stack: z
+			.string()
+			.optional()
+			.meta({ description: "Stack trace of the error.", example: example?.error?.stack ?? "xyz" }),
+	});
+
+	const standardError = z.object({
+		status: z.number().meta({ description: "Error status code to trace the error.", example: example?.status ?? 500 }),
+		statusText: z.string().meta({
+			description: "Status text based on the status code.",
+			example: example?.statusText ?? "INTERNAL_SERVER_ERROR",
 		}),
 	});
 
-	return extendedError ? baseError.extend({ error: baseError.shape.error.merge(extendedError) }) : baseError;
+	return extendedError?.shape
+		? standardError.extend({
+				error: z.intersection(baseError, extendedError),
+			})
+		: standardError.extend({
+				error: baseError,
+			});
 };
 
 /**
@@ -84,36 +112,48 @@ export const createErrorSchema = <T extends z.AnyZodObject = z.SomeZodObject>({ 
  * @param extendedError - Extended error schema.
  * @returns OpenAPI JSON schema.
  */
-export const createErrorJson = <T extends z.AnyZodObject = z.SomeZodObject, R extends z.AnyZodObject | z.ZodArray<z.AnyZodObject> = z.SomeZodObject>(
+export const createErrorJson = <T extends z.ZodObject = z.ZodObject, R extends z.ZodObject | z.ZodArray<z.ZodObject> = z.ZodObject>(
 	{
 		status,
 		message,
 		customExample,
 		extendedError,
 		zodIssueSchema,
-	}: { status: (typeof HTTP_STATUSES)[StatusCodeText]; message?: string; extendedError?: T; customExample?: TExample<T>["error"]; zodIssueSchema?: R } = {
+	}: {
+		status: (typeof HTTP_STATUSES)[StatusCodeText];
+		message?: string;
+		extendedError?: T;
+		customExample?: TExample<T>["error"];
+		zodIssueSchema?: R;
+	} = {
 		status: HTTP_STATUSES.INTERNAL_SERVER_ERROR,
 	},
 ) => {
 	const { CODE, KEY, PHRASE } = status;
 
 	if (zodIssueSchema) {
-		const { error } = zodIssueSchema.safeParse(zodIssueSchema._def.typeName === z.ZodFirstPartyTypeKind.ZodArray ? [] : {});
+		const { error } = zodIssueSchema.safeParse(zodIssueSchema instanceof z.ZodArray ? [] : {});
+		// @ts-expect-error - ZodError<Record<string, unknown>> | ZodError<Record<string, unknown>[]>
+		const flattenedError = error ? z.flattenError(error) : null;
+
 		return createJson({
 			description: message ?? PHRASE,
 			schema: createErrorSchema({
-				extendedError: z.object({
-					issues: z.record(z.string(), z.string().array().optional()).openapi({ description: "Issues with the schema", example: error?.flatten()?.fieldErrors }),
-					name: z.string().openapi({ example: error?.name }),
-				}),
 				example: {
-					status: CODE as StatusCode,
-					statusText: KEY,
 					error: {
 						message: message ?? PHRASE,
 						...customExample,
 					},
+					status: CODE as StatusCode,
+					statusText: KEY,
 				},
+				extendedError: z.object({
+					issues: z.record(z.string(), z.string().array().optional()).meta({
+						description: "Issues with the schema",
+						example: flattenedError?.fieldErrors,
+					}),
+					name: z.string().meta({ example: error?.name }),
+				}),
 			}),
 		});
 	}
@@ -121,15 +161,15 @@ export const createErrorJson = <T extends z.AnyZodObject = z.SomeZodObject, R ex
 	return createJson({
 		description: message ?? PHRASE,
 		schema: createErrorSchema({
-			extendedError,
 			example: {
-				status: CODE as StatusCode,
-				statusText: KEY,
 				error: {
 					message: message ?? PHRASE,
 					...customExample,
-				},
+				} as TExample<T>["error"],
+				status: CODE as StatusCode,
+				statusText: KEY,
 			},
+			extendedError,
 		}),
 	});
 };

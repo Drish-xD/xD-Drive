@@ -1,7 +1,15 @@
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { CONFIG } from "@/config";
-import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 
-export const db = drizzle(CONFIG.DATABASE_URL, { schema, casing: "snake_case", logger: CONFIG.DATABASE_LOGGING });
+const client = postgres(CONFIG.DATABASE_URL, { prepare: false });
+
+export const db = drizzle({
+	casing: "snake_case",
+	client,
+	logger: CONFIG.DATABASE_LOGGING,
+	schema,
+});
 
 export type DB = typeof db;
