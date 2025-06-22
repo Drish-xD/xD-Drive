@@ -4,21 +4,20 @@ import { z } from "@/db/lib";
 import { createErrorSchema, createJson, createMessageSchema } from "@/helpers/schema.helpers";
 
 export const home = createRoute({
-	path: "/",
 	method: "get",
-	tags: ["Internal"],
+	path: "/",
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Home route",
 			schema: createMessageSchema({ example: "Hello World!" }),
 		}),
 	},
+	tags: ["Internal"],
 });
 
 export const healthCheck = createRoute({
-	path: "/health",
 	method: "get",
-	tags: ["Internal"],
+	path: "/health",
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Health check route to check the API and DB connection",
@@ -36,6 +35,7 @@ export const healthCheck = createRoute({
 			schema: createErrorSchema(),
 		}),
 	},
+	tags: ["Internal"],
 });
 
 export type THomeRoute = typeof home;

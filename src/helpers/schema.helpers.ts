@@ -17,7 +17,7 @@ export const createMessageSchema = (metaOptions: JSONSchemaMeta = { description:
  */
 export const createUuidSchema = (metaOptions: JSONSchemaMeta = { description: "The UUID of the item", example: "123e4567-e89b-12d3-a456-426614174000" }) => {
 	return z.object({
-		id: z.uuid().meta(metaOptions),
+		id: z.uuid({ error: "ID is required" }).meta(metaOptions),
 	});
 };
 
@@ -38,12 +38,12 @@ export const createIdSchema = (metaOptions: JSONSchemaMeta = { description: "The
  */
 export const createJson = <T extends z.ZodType>({ schema, description }: { schema: T; description: string }) => {
 	return {
-		description,
 		content: {
 			"application/json": {
 				schema,
 			},
 		},
+		description,
 	};
 };
 
@@ -55,12 +55,12 @@ export const createJson = <T extends z.ZodType>({ schema, description }: { schem
  */
 export const createMultiPartForm = <T extends z.ZodType>({ schema, description }: { schema: T; description: string }) => {
 	return {
-		description,
 		content: {
 			"multipart/form-data": {
 				schema: schema,
 			},
 		},
+		description,
 	};
 };
 
@@ -139,6 +139,14 @@ export const createErrorJson = <T extends z.ZodObject = z.ZodObject, R extends z
 		return createJson({
 			description: message ?? PHRASE,
 			schema: createErrorSchema({
+				example: {
+					error: {
+						message: message ?? PHRASE,
+						...customExample,
+					},
+					status: CODE as StatusCode,
+					statusText: KEY,
+				},
 				extendedError: z.object({
 					issues: z.record(z.string(), z.string().array().optional()).meta({
 						description: "Issues with the schema",
@@ -146,14 +154,6 @@ export const createErrorJson = <T extends z.ZodObject = z.ZodObject, R extends z
 					}),
 					name: z.string().meta({ example: error?.name }),
 				}),
-				example: {
-					status: CODE as StatusCode,
-					statusText: KEY,
-					error: {
-						message: message ?? PHRASE,
-						...customExample,
-					},
-				},
 			}),
 		});
 	}
@@ -161,15 +161,15 @@ export const createErrorJson = <T extends z.ZodObject = z.ZodObject, R extends z
 	return createJson({
 		description: message ?? PHRASE,
 		schema: createErrorSchema({
-			extendedError,
 			example: {
-				status: CODE as StatusCode,
-				statusText: KEY,
 				error: {
 					message: message ?? PHRASE,
 					...customExample,
 				} as TExample<T>["error"],
+				status: CODE as StatusCode,
+				statusText: KEY,
 			},
+			extendedError,
 		}),
 	});
 };

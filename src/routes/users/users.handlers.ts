@@ -30,16 +30,16 @@ export const updateCurrentUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) 
 
 	if (!updatedUserDetails) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-			message: MESSAGES.USER.NOT_FOUND,
 			cause: "users.handlers@user#001",
+			message: MESSAGES.USER.NOT_FOUND,
 		});
 	}
 	const { passwordHash, ...data } = updatedUserDetails;
 
 	return ctx.json(
 		{
-			message: MESSAGES.USER.UPDATED_SUCCESS,
 			data,
+			message: MESSAGES.USER.UPDATED_SUCCESS,
 		},
 		HTTP_STATUSES.OK.CODE,
 	);
@@ -59,19 +59,19 @@ export const deleteCurrentUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) 
 
 	if (!deletedUser?.deletedAt) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-			message: MESSAGES.USER.NOT_FOUND,
 			cause: "users.handlers@user#001",
+			message: MESSAGES.USER.NOT_FOUND,
 		});
 	}
 
 	return ctx.json(
 		{
-			message: MESSAGES.USER.DELETED_SUCCESS,
 			data: {
+				deletedAt: deletedUser.deletedAt,
 				id: deletedUser.id,
 				status: deletedUser.status,
-				deletedAt: deletedUser.deletedAt,
 			},
+			message: MESSAGES.USER.DELETED_SUCCESS,
 		},
 		HTTP_STATUSES.OK.CODE,
 	);
@@ -111,16 +111,16 @@ export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
 
 	return ctx.json(
 		{
+			data: usersListing,
 			meta: {
+				appliedFilters: filters,
 				currentPage: page,
-				startIndex: offset,
 				itemsPerPage: limit,
-				totalCount: totalCount,
 				pageCount: pageCount,
 				sortOrder: order,
-				appliedFilters: filters,
+				startIndex: offset,
+				totalCount: totalCount,
 			},
-			data: usersListing,
 		},
 		HTTP_STATUSES.OK.CODE,
 	);
@@ -139,8 +139,8 @@ export const user: AppRouteHandler<TUserRoute> = async (ctx) => {
 
 	if (!userDetails) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-			message: MESSAGES.USER.NOT_FOUND,
 			cause: "users.handlers@user#001",
+			message: MESSAGES.USER.NOT_FOUND,
 		});
 	}
 

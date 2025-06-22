@@ -1,16 +1,15 @@
 import { createRoute } from "@hono/zod-openapi";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { createPaginationQuery, createPaginationResponse } from "@/helpers/pagination.helpers";
-import { createErrorJson, createJson, createMessageSchema, createMultiPartForm, createUuidSchema } from "@/helpers/schema.helpers";
-import { createFolderSchema, selectResourceSchema, updateResourceSchema, uploadFileSchema } from "@/models";
+import { createErrorJson, createJson, createUuidSchema } from "@/helpers/schema.helpers";
+import { selectResourceSchema } from "@/models";
 
 /**
  * Resources Listing route
  */
 export const resources = createRoute({
-	path: "/",
 	method: "get",
-	tags: ["Resources"],
+	path: "/",
 	request: {
 		query: createPaginationQuery(),
 	},
@@ -20,55 +19,22 @@ export const resources = createRoute({
 			schema: createPaginationResponse(selectResourceSchema),
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
 			message: MESSAGES.AUTH.UNAUTHORIZED,
+			status: HTTP_STATUSES.UNAUTHORIZED,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Resources"],
 });
 
 export type TResourcesRoute = typeof resources;
 
 /**
- * Resources Details route
- */
-export const resource = createRoute({
-	path: "/:id",
-	method: "get",
-	tags: ["Resources"],
-	request: {
-		params: createUuidSchema({ description: "Resource ID" }),
-	},
-	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Get a resource details",
-			schema: selectResourceSchema,
-		}),
-		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
-			message: MESSAGES.AUTH.UNAUTHORIZED,
-		}),
-		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
-			message: MESSAGES.RESOURCE.NOT_FOUND,
-		}),
-		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
-			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
-		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
-	},
-});
-
-export type TResourceRoute = typeof resource;
-
-/**
  * Get Resource Children route
  */
 export const getResourceChildren = createRoute({
-	path: "/:id/children",
 	method: "get",
-	tags: ["Resources"],
+	path: "/:id/children",
 	request: {
 		params: createUuidSchema({ description: "Resource ID" }),
 		query: createPaginationQuery(),
@@ -79,203 +45,20 @@ export const getResourceChildren = createRoute({
 			schema: createPaginationResponse(selectResourceSchema),
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
 			message: MESSAGES.AUTH.UNAUTHORIZED,
+			status: HTTP_STATUSES.UNAUTHORIZED,
 		}),
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
 			message: MESSAGES.RESOURCE.NOT_FOUND,
+			status: HTTP_STATUSES.NOT_FOUND,
 		}),
 		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Resources"],
 });
 
 export type TGetResourceChildrenRoute = typeof getResourceChildren;
-
-/**
- * Update Resource route
- */
-export const updateResource = createRoute({
-	path: "/:id",
-	method: "put",
-	tags: ["Resources"],
-	request: {
-		params: createUuidSchema({ description: "Resource ID" }),
-		body: createJson({
-			description: "Payload to update a resource",
-			schema: updateResourceSchema,
-		}),
-	},
-	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Update a resource",
-			schema: selectResourceSchema,
-		}),
-		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
-			message: MESSAGES.AUTH.UNAUTHORIZED,
-		}),
-		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
-			message: MESSAGES.RESOURCE.NOT_FOUND,
-		}),
-		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
-			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
-		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
-	},
-});
-
-export type TUpdateResourceRoute = typeof updateResource;
-
-/**
- * Download Resource route
- */
-export const downloadResource = createRoute({
-	path: "/:id/download",
-	method: "get",
-	tags: ["Resources"],
-	request: {
-		params: createUuidSchema({ description: "Resource ID" }),
-	},
-	responses: {
-		[HTTP_STATUSES.OK.CODE]: {
-			description: "Download a resource",
-			content: {
-				"application/octet-stream": {
-					schema: {
-						type: "string",
-						format: "binary",
-					},
-				},
-			},
-		},
-		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
-			message: MESSAGES.AUTH.UNAUTHORIZED,
-		}),
-		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
-			message: MESSAGES.RESOURCE.NOT_FOUND,
-		}),
-		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
-			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
-		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
-	},
-});
-
-export type TDownloadResourceRoute = typeof downloadResource;
-
-/**
- * Create New Folder route
- */
-export const createFolder = createRoute({
-	path: "/folder",
-	method: "post",
-	tags: ["Resources"],
-	request: {
-		body: createJson({
-			description: "Payload to create a new folder",
-			schema: createFolderSchema,
-		}),
-	},
-	responses: {
-		[HTTP_STATUSES.CREATED.CODE]: createJson({
-			description: "Created a new folder",
-			schema: createMessageSchema({
-				example: MESSAGES.RESOURCE.CREATED_FOLDER_SUCCESS,
-			}).extend({ data: selectResourceSchema }),
-		}),
-		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
-			message: MESSAGES.AUTH.UNAUTHORIZED,
-		}),
-		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
-			message: MESSAGES.AUTH.USER_NOT_FOUND,
-		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
-	},
-});
-
-export type TCreateFolderRoute = typeof createFolder;
-
-/**
- * Upload new file route
- */
-export const uploadFile = createRoute({
-	path: "/file",
-	method: "post",
-	tags: ["Resources"],
-	request: {
-		body: createMultiPartForm({
-			description: "Payload to upload a new file",
-			schema: uploadFileSchema,
-		}),
-	},
-	responses: {
-		[HTTP_STATUSES.CREATED.CODE]: createJson({
-			description: "Uploaded a new file",
-			schema: createMessageSchema({ example: MESSAGES.RESOURCE.UPLOADED_FILE_SUCCESS }).extend({
-				data: selectResourceSchema,
-			}),
-		}),
-		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
-			message: MESSAGES.AUTH.UNAUTHORIZED,
-		}),
-		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
-			message: MESSAGES.RESOURCE.NOT_FOUND,
-		}),
-		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
-			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
-		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
-	},
-});
-
-export type TUploadFileRoute = typeof uploadFile;
-
-/**
- * Delete Resource route
- */
-export const deleteResource = createRoute({
-	path: "/:id",
-	method: "delete",
-	tags: ["Resources"],
-	request: {
-		params: createUuidSchema({ description: "Resource ID", example: "123e4567-e89b-12d3-a456-426614174000" }),
-	},
-	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Delete a resource",
-			schema: createMessageSchema({ example: MESSAGES.RESOURCE.DELETED_SUCCESS }).extend({
-				data: selectResourceSchema.pick({
-					deletedAt: true,
-					id: true,
-					status: true,
-				}),
-			}),
-		}),
-		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
-			message: MESSAGES.AUTH.UNAUTHORIZED,
-		}),
-		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
-			message: MESSAGES.RESOURCE.NOT_FOUND,
-		}),
-		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
-	},
-});
-
-export type TDeleteResourceRoute = typeof deleteResource;

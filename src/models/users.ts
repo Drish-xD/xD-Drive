@@ -6,57 +6,57 @@ import { users } from "@/db/schema";
  * Example User
  */
 const userExample = {
-	id: "123e4567-e89b-12d3-a456-426614174000",
-	fullName: "John Doe",
+	createdAt: new Date(),
+	deletedAt: null,
 	displayName: "john_doe",
 	email: "john.doe@mail.com",
 	emailVerifiedAt: null,
-	status: "active",
-	createdAt: new Date(),
-	updatedAt: new Date(),
+	fullName: "John Doe",
+	id: "123e4567-e89b-12d3-a456-426614174000",
 	lastLoginAt: null,
-	deletedAt: null,
 	password: "password",
+	status: "active",
 	storageQuota: 1073741824,
+	updatedAt: new Date(),
 	usedStorage: 0,
 } as const;
 
 /**
  * Zod Schema
  */
-export const selectUserSchema = createSelectSchema(users).omit({ passwordHash: true }).meta({ title: "User", example: userExample });
+export const selectUserSchema = createSelectSchema(users).omit({ passwordHash: true }).meta({ example: userExample, title: "User" });
 
 export const insertUserSchema = createInsertSchema(users, {
+	displayName: (schema) => schema.min(1, { error: "Display name is required" }),
 	email: () => z.email({ error: "Invalid email address" }),
 	fullName: (schema) => schema.min(1, { error: "Full name is required" }),
-	displayName: (schema) => schema.min(1, { error: "Display name is required" }),
 })
-	.pick({ email: true, fullName: true, displayName: true })
+	.pick({ displayName: true, email: true, fullName: true })
 	.extend({ password: z.string().min(8) })
 	.meta({
-		title: "InsertUser",
 		example: {
 			displayName: userExample.displayName,
 			email: userExample.email,
 			fullName: userExample.fullName,
 			password: userExample.password,
 		},
+		title: "InsertUser",
 	});
 
 export const updateUserSchema = createUpdateSchema(users, {
+	displayName: (schema) => schema.min(1, { error: "Display name is required" }),
 	email: (schema) => schema.email(),
 	fullName: (schema) => schema.min(1, { error: "Full name is required" }),
-	displayName: (schema) => schema.min(1, { error: "Display name is required" }),
 })
-	.pick({ email: true, fullName: true, displayName: true })
+	.pick({ displayName: true, email: true, fullName: true })
 	.partial()
 	.meta({
-		title: "UpdateUser",
 		example: {
 			displayName: userExample.displayName,
-			fullName: userExample.fullName,
 			email: userExample.email,
+			fullName: userExample.fullName,
 		},
+		title: "UpdateUser",
 	});
 
 export const loginUserSchema = insertUserSchema
@@ -65,11 +65,11 @@ export const loginUserSchema = insertUserSchema
 		password: true,
 	})
 	.meta({
-		title: "LoginUser",
 		example: {
 			email: userExample.email,
 			password: userExample.password,
 		},
+		title: "LoginUser",
 	});
 
 export type TUser = inferType<typeof selectUserSchema>;

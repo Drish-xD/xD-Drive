@@ -8,13 +8,13 @@ import type { TInsertResourceVersion } from "@/models";
 const fakeVersions = faker.helpers.multiple(
 	() =>
 		({
-			createdBy: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
-			resourceId: sql`(SELECT id FROM resources ORDER BY RANDOM() LIMIT 1)`,
-			storagePath: `/uploads/${faker.string.uuid()}/`,
-			size: faker.number.int({ min: 1024, max: 10485760 }), // 1KB - 10MB
 			contentHash: faker.string.hexadecimal({ length: 32 }),
-			versionNumber: faker.number.int({ min: 1, max: 10 }),
+			createdBy: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
 			isCurrent: faker.datatype.boolean(),
+			resourceId: sql`(SELECT id FROM resources ORDER BY RANDOM() LIMIT 1)`, // 1KB - 10MB
+			size: faker.number.int({ max: 10485760, min: 1024 }),
+			storagePath: `/uploads/${faker.string.uuid()}/`,
+			versionNumber: faker.number.int({ max: 10, min: 1 }),
 		}) satisfies PartialUnknown<TInsertResourceVersion>,
 	{ count: 10 },
 );

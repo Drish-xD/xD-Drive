@@ -16,21 +16,21 @@ const STORAGE_QUOTA = 1073741824; // 1GB in bytes
 export const users = pgTable(
 	"users",
 	{
-		id: uuid().defaultRandom().primaryKey(),
-		fullName: varchar({ length: 255 }).notNull(),
+		deletedAt: timestamp(),
 		displayName: varchar({ length: 255 }).notNull().unique(),
 		email: varchar({ length: 255 }).notNull().unique(),
-		passwordHash: text().notNull(),
 		emailVerifiedAt: timestamp(),
+		fullName: varchar({ length: 255 }).notNull(),
+		id: uuid().defaultRandom().primaryKey(),
+
+		// Timestamps
+		lastLoginAt: timestamp(),
+		passwordHash: text().notNull(),
 		status: userStatusEnum().notNull().default("active"),
 
 		// Storage
 		storageQuota: bigint({ mode: "number" }).notNull().default(STORAGE_QUOTA),
 		usedStorage: bigint({ mode: "number" }).notNull().default(0),
-
-		// Timestamps
-		lastLoginAt: timestamp(),
-		deletedAt: timestamp(),
 		...defaultTimestamps,
 	},
 	// Indexes
@@ -41,10 +41,10 @@ export const users = pgTable(
  * Relations
  */
 export const usersRelations = relations(users, ({ many }) => ({
-	resources: many(resources),
-	createdVersions: many(resourceVersions, { relationName: "createdBy" }),
-	shares: many(resourceShares, { relationName: "grantedTo" }),
+	activityLogs: many(activityLogs),
 	createdShares: many(resourceShares, { relationName: "createdBy" }),
 	createdTags: many(tags),
-	activityLogs: many(activityLogs),
+	createdVersions: many(resourceVersions, { relationName: "createdBy" }),
+	resources: many(resources),
+	shares: many(resourceShares, { relationName: "grantedTo" }),
 }));

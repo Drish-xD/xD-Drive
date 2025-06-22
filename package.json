@@ -1,22 +1,8 @@
 {
-	"name": "xd-drive",
-	"description": "xD Drive API",
-	"version": "1.0.0",
-	"license": "GPL-3.0-or-later",
 	"author": {
-		"name": "Drish",
 		"email": "hey@drishxd.dev",
+		"name": "Drish",
 		"url": "https://drishxd.dev"
-	},
-	"type": "module",
-	"scripts": {
-		"dev": "bun run --hot src/index.ts",
-		"build": "bun run scripts/build.ts",
-		"start": "bun run dist/index.js",
-		"check": "biome check --fix",
-		"db:seed": "bun run ./src/db/seeds/index.ts",
-		"db": "drizzle-kit",
-		"update:statuses": "bun run scripts/update-http-statuses.ts"
 	},
 	"dependencies": {
 		"@scalar/hono-api-reference": "^0.9.6",
@@ -33,6 +19,7 @@
 		"ts-morph": "^26.0.0",
 		"zod": "^3.25.67"
 	},
+	"description": "xD Drive API",
 	"devDependencies": {
 		"@biomejs/biome": "2.0.4",
 		"@faker-js/faker": "^9.8.0",
@@ -42,5 +29,18 @@
 		"drizzle-kit": "^0.31.1",
 		"drizzle-seed": "^0.3.1",
 		"vercel": "^43.3.0"
-	}
+	},
+	"license": "GPL-3.0-or-later",
+	"name": "xd-drive",
+	"scripts": {
+		"build": "bun run scripts/build.ts",
+		"check": "biome check --fix",
+		"db": "drizzle-kit",
+		"db:seed": "bun run ./src/db/seeds/index.ts",
+		"dev": "bun run --hot src/index.ts",
+		"start": "bun run dist/index.js",
+		"update:statuses": "bun run scripts/update-http-statuses.ts"
+	},
+	"type": "module",
+	"version": "1.0.0"
 }

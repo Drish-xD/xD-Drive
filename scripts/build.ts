@@ -10,8 +10,8 @@ try {
 	console.log("Building...");
 	const nodeBuild = await Bun.build({
 		entrypoints: ["./src/index.ts"],
-		target: "node",
 		minify: true,
+		target: "node",
 	});
 
 	// Write output files

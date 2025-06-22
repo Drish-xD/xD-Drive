@@ -17,8 +17,8 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 	const { password, email, ...body } = ctx.req.valid("json");
 
 	const checkUser = await ctx.var.db.query.users.findFirst({
-		where: (users, fn) => fn.eq(lower(users.email), email.toLowerCase()),
 		columns: { id: true },
+		where: (users, fn) => fn.eq(lower(users.email), email.toLowerCase()),
 	});
 
 	if (checkUser) {
@@ -46,14 +46,14 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 	const db = ctx.get("db");
 
 	const checkUser = await db.query.users.findFirst({
+		columns: { id: true, passwordHash: true },
 		where: (users, fn) => fn.eq(lower(users.email), email.toLowerCase()),
-		columns: { passwordHash: true, id: true },
 	});
 
 	if (!checkUser) {
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-			message: MESSAGES.AUTH.USER_NOT_FOUND,
 			cause: "auth.handlers@login#001",
+			message: MESSAGES.AUTH.USER_NOT_FOUND,
 		});
 	}
 
@@ -61,8 +61,8 @@ export const login: AppRouteHandler<TLoginRoute> = async (ctx) => {
 
 	if (!isValid) {
 		throw new HTTPException(HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE, {
-			message: MESSAGES.AUTH.INVALID_CREDENTIALS,
 			cause: "auth.handlers@login#002",
+			message: MESSAGES.AUTH.INVALID_CREDENTIALS,
 		});
 	}
 
@@ -120,8 +120,8 @@ export const verifyEmail: AppRouteHandler<TVerifyEmailRoute> = async (ctx) => {
 	const userData = ctx.get("userData");
 	if (userData?.emailVerifiedAt) {
 		throw new HTTPException(HTTP_STATUSES.CONFLICT.CODE, {
-			message: MESSAGES.AUTH.USER_ALREADY_VERIFIED,
 			cause: "auth.handlers@verifyEmail#001",
+			message: MESSAGES.AUTH.USER_ALREADY_VERIFIED,
 		});
 	}
 

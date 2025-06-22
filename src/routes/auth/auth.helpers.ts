@@ -9,14 +9,14 @@ export const generateJwtTokens = async (id: TUser["id"]) => {
 	const currentTimeInSeconds = getUnixTime(new Date());
 
 	const accessTokenPayload: TJWTPayload = {
-		id,
 		exp: currentTimeInSeconds + CONFIG.JWT_EXPIRES_IN,
 		iat: currentTimeInSeconds,
+		id,
 	};
 	const refreshTokenPayload: TJWTPayload = {
-		id,
 		exp: currentTimeInSeconds + CONFIG.JWT_REFRESH_EXPIRES_IN,
 		iat: currentTimeInSeconds,
+		id,
 	};
 
 	const [accessToken, refreshToken] = await Promise.all([sign(accessTokenPayload, CONFIG.JWT_SECRET), sign(refreshTokenPayload, CONFIG.JWT_REFRESH_SECRET)]);
@@ -27,14 +27,14 @@ export const generateJwtTokens = async (id: TUser["id"]) => {
 export const setCookieOptions: Record<"accessToken" | "refreshToken", CookieOptions> = {
 	accessToken: {
 		httpOnly: true,
-		secure: CONFIG.IsProd,
-		sameSite: "strict",
 		maxAge: CONFIG.JWT_EXPIRES_IN,
+		sameSite: "strict",
+		secure: CONFIG.IsProd,
 	},
 	refreshToken: {
 		httpOnly: true,
-		secure: CONFIG.IsProd,
-		sameSite: "strict",
 		maxAge: CONFIG.JWT_REFRESH_EXPIRES_IN,
+		sameSite: "strict",
+		secure: CONFIG.IsProd,
 	},
 };

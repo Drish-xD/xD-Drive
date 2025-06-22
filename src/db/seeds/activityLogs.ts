@@ -10,8 +10,8 @@ const fakeActivityLogs = faker.helpers.multiple(
 		({
 			activityType: faker.helpers.arrayElement(activityTypeEnum.enumValues),
 			ipAddress: faker.internet.ipv4(),
-			userAgent: faker.internet.userAgent(),
 			resourceId: sql`(SELECT id FROM resources ORDER BY RANDOM() LIMIT 1)`,
+			userAgent: faker.internet.userAgent(),
 			userId: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
 		}) satisfies PartialUnknown<TInsertActivityLog>,
 	{ count: 10 },

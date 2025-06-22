@@ -10,14 +10,14 @@ const fakeResources = faker.helpers.multiple(
 		const fileName = faker.system.commonFileName(fileExt);
 
 		return {
-			ownerId: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
-			name: fileName,
-			mimeType: mimeType,
-			status: faker.helpers.arrayElement(resourceStatusEnum.enumValues),
-			storagePath: `/uploads/${faker.string.uuid()}/`,
-			size: faker.number.int({ min: 1024, max: 10485760 }), // 1KB - 10MB
 			contentHash: faker.string.hexadecimal({ length: 32 }),
 			lastAccessedAt: faker.date.recent(),
+			mimeType: mimeType,
+			name: fileName,
+			ownerId: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
+			size: faker.number.int({ max: 10485760, min: 1024 }), // 1KB - 10MB
+			status: faker.helpers.arrayElement(resourceStatusEnum.enumValues),
+			storagePath: `/uploads/${faker.string.uuid()}/`,
 		};
 	},
 	{ count: 5 },

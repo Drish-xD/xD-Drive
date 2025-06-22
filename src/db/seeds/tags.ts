@@ -8,9 +8,9 @@ import type { TInsertTag } from "@/models";
 const fakeTags = faker.helpers.multiple(
 	() =>
 		({
-			name: faker.system.commonFileType(),
-			isAiGenerated: faker.datatype.boolean(),
 			createdBy: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
+			isAiGenerated: faker.datatype.boolean(),
+			name: faker.system.commonFileType(),
 		}) satisfies PartialUnknown<TInsertTag>,
 	{ count: 5 },
 );

@@ -24,12 +24,12 @@ const stringParse = <T extends z.ZodType>(schema: T) =>
 
 export const orderBySchema = z
 	.object({
-		id: z.string(),
 		desc: z.boolean(),
+		id: z.string(),
 	})
 	.array()
 	.default([])
-	.meta({ description: "Sorting order of the items", example: [{ id: "createdAt", desc: true }] });
+	.meta({ description: "Sorting order of the items", example: [{ desc: true, id: "createdAt" }] });
 
 const filtersSchema = z
 	.object({
@@ -43,13 +43,13 @@ const filtersSchema = z
 type TFilter = inferType<typeof filtersSchema>[number];
 
 const metadataSchema = z.object({
+	appliedFilters: filtersSchema,
 	currentPage: z.coerce.number().min(1).default(1).meta({ description: "Current page number", example: 1 }),
 	itemsPerPage: z.coerce.number().min(1).max(200).default(10).meta({ description: "Number of items per page", example: 10 }),
-	startIndex: z.coerce.number().min(0).meta({ description: "Starting index for the items", example: 0 }),
-	totalCount: z.coerce.number().min(0).optional().meta({ description: "Total number of items in the collection", example: 10 }),
 	pageCount: z.coerce.number().min(1).optional().meta({ description: "Total number of pages in the collection", example: 1 }),
 	sortOrder: orderBySchema,
-	appliedFilters: filtersSchema,
+	startIndex: z.coerce.number().min(0).meta({ description: "Starting index for the items", example: 0 }),
+	totalCount: z.coerce.number().min(0).optional().meta({ description: "Total number of items in the collection", example: 10 }),
 });
 
 /**
@@ -58,10 +58,13 @@ const metadataSchema = z.object({
 export const createPaginationQuery = () => {
 	return z
 		.object({
-			page: z.coerce.number().min(1).default(1).meta({
-				description: "Page number",
-				example: 1,
-			}),
+			filters: stringParse(filtersSchema),
+			includeTotal: z
+				.enum(["true", "false"])
+				.transform((x) => x === "true")
+				.pipe(z.boolean())
+				.default(false)
+				.meta({ description: "Include total count in the response", example: "false" }),
 			limit: z
 				.union([z.coerce.number().min(1).max(100), z.literal(-1)])
 				.default(10)
@@ -74,13 +77,10 @@ export const createPaginationQuery = () => {
 				example: 0,
 			}),
 			order: stringParse(orderBySchema),
-			filters: stringParse(filtersSchema),
-			includeTotal: z
-				.enum(["true", "false"])
-				.transform((x) => x === "true")
-				.pipe(z.boolean())
-				.default(false)
-				.meta({ description: "Include total count in the response", example: "false" }),
+			page: z.coerce.number().min(1).default(1).meta({
+				description: "Page number",
+				example: 1,
+			}),
 		})
 		.transform((_, ctx) => {
 			if (ctx.value.limit === -1) {
@@ -103,8 +103,8 @@ export const createPaginationQuery = () => {
  */
 export const createPaginationResponse = <T extends z.ZodObject>(dataSchema: T) => {
 	return z.object({
-		meta: metadataSchema.meta({ description: "meta data related to the pagination" }),
 		data: dataSchema.array().meta({ description: "Array of requested items" }),
+		meta: metadataSchema.meta({ description: "meta data related to the pagination" }),
 	});
 };
 

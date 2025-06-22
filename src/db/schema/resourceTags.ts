@@ -11,18 +11,18 @@ import { users } from "./users";
 export const resourceTags = pgTable(
 	"resource_tags",
 	{
-		tagId: uuid()
-			.notNull()
-			.references(() => tags.id, { onDelete: "cascade" }),
-		resourceId: uuid()
-			.notNull()
-			.references(() => resources.id, { onDelete: "cascade" }),
-		createdBy: uuid().references(() => users.id, { onDelete: "cascade" }),
+		confidenceScore: integer(),
 		createdAt: defaultTimestamps.createdAt,
+		createdBy: uuid().references(() => users.id, { onDelete: "cascade" }),
 
 		// AI generated tags
 		isAiGenerated: boolean().default(false).notNull(),
-		confidenceScore: integer(),
+		resourceId: uuid()
+			.notNull()
+			.references(() => resources.id, { onDelete: "cascade" }),
+		tagId: uuid()
+			.notNull()
+			.references(() => tags.id, { onDelete: "cascade" }),
 	},
 
 	(table) => [
@@ -37,13 +37,13 @@ export const resourceTags = pgTable(
  * Relations
  */
 export const resourceTagsRelations = relations(resourceTags, ({ one }) => ({
-	resource: one(resources, {
-		fields: [resourceTags.resourceId],
-		references: [resources.id],
-	}),
 	creator: one(users, {
 		fields: [resourceTags.createdBy],
 		references: [users.id],
+	}),
+	resource: one(resources, {
+		fields: [resourceTags.resourceId],
+		references: [resources.id],
 	}),
 	tag: one(tags, {
 		fields: [resourceTags.tagId],

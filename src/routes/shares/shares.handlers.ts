@@ -7,11 +7,11 @@ export const healthCheck: AppRouteHandler<THealthCheckRoute> = async (ctx) => {
 
 	return ctx.json(
 		{
-			message: "API and DB connection is healthy",
 			data: {
 				command,
 				rowCount,
 			},
+			message: "API and DB connection is healthy",
 		},
 		HTTP_STATUSES.OK.CODE,
 	);

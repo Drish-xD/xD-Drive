@@ -11,18 +11,18 @@ import { users } from "./users";
 export const activityLogs = pgTable(
 	"activity_logs",
 	{
-		id: uuid().primaryKey().defaultRandom(),
-		userId: uuid()
-			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
-		resourceId: uuid().references(() => resources.id, { onDelete: "set null" }),
 		activityType: activityTypeEnum().notNull(),
-		ipAddress: inet(),
-		userAgent: text(),
-		details: jsonb(),
 
 		// Timestamps
 		createdAt: defaultTimestamps.createdAt,
+		details: jsonb(),
+		id: uuid().primaryKey().defaultRandom(),
+		ipAddress: inet(),
+		resourceId: uuid().references(() => resources.id, { onDelete: "set null" }),
+		userAgent: text(),
+		userId: uuid()
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
 	},
 
 	// Indexes
@@ -33,12 +33,12 @@ export const activityLogs = pgTable(
  * Relations
  */
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
-	user: one(users, {
-		fields: [activityLogs.userId],
-		references: [users.id],
-	}),
 	resouce: one(resources, {
 		fields: [activityLogs.resourceId],
 		references: [resources.id],
+	}),
+	user: one(users, {
+		fields: [activityLogs.userId],
+		references: [users.id],
 	}),
 }));

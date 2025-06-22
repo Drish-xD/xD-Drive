@@ -49,14 +49,14 @@ const run = async () => {
 	for (const { code, constant, phrase, comment, isDeprecated } of Codes) {
 		statusCodeFile
 			.addVariableStatement({
-				isExported: true,
 				declarationKind: VariableDeclarationKind.Const,
 				declarations: [
 					{
-						name: constant,
 						initializer: `{ CODE: ${code}, PHRASE: "${phrase}", KEY: "${constant}" } as const`,
+						name: constant,
 					},
 				],
+				isExported: true,
 			})
 			.addJsDoc({
 				description: `${isDeprecated ? "@deprecated\n" : ""}${comment.doc}\n\n${comment.description}`,

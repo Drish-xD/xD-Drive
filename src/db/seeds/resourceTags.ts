@@ -8,11 +8,11 @@ import type { TInsertResourceTag } from "@/models";
 const fakeTags = faker.helpers.multiple(
 	() =>
 		({
-			tagId: sql`(SELECT id FROM tags ORDER BY RANDOM() LIMIT 1)`,
-			resourceId: sql`(SELECT id FROM resources ORDER BY RANDOM() LIMIT 1)`,
+			confidenceScore: faker.number.int({ max: 10, min: 1 }),
 			createdBy: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
 			isAiGenerated: faker.datatype.boolean(),
-			confidenceScore: faker.number.int({ min: 1, max: 10 }),
+			resourceId: sql`(SELECT id FROM resources ORDER BY RANDOM() LIMIT 1)`,
+			tagId: sql`(SELECT id FROM tags ORDER BY RANDOM() LIMIT 1)`,
 		}) satisfies PartialUnknown<TInsertResourceTag>,
 	{ count: 10 },
 );

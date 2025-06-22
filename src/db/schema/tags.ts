@@ -10,11 +10,11 @@ import { users } from "./users";
 export const tags = pgTable(
 	"tags",
 	{
-		id: uuid().primaryKey().defaultRandom(),
-		name: varchar({ length: 255 }).notNull(),
-		isAiGenerated: boolean().notNull().default(false),
-		createdBy: uuid().references(() => users.id, { onDelete: "set null" }),
 		createdAt: defaultTimestamps.createdAt,
+		createdBy: uuid().references(() => users.id, { onDelete: "set null" }),
+		id: uuid().primaryKey().defaultRandom(),
+		isAiGenerated: boolean().notNull().default(false),
+		name: varchar({ length: 255 }).notNull(),
 	},
 
 	// Indexes
@@ -25,9 +25,9 @@ export const tags = pgTable(
  * Relations
  */
 export const tagsRelations = relations(tags, ({ many, one }) => ({
-	resources: many(resources),
 	creator: one(users, {
 		fields: [tags.createdBy],
 		references: [users.id],
 	}),
+	resources: many(resources),
 }));

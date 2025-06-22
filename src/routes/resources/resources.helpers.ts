@@ -1,30 +1,30 @@
 import { HTTPException } from "hono/http-exception";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { type DB, db } from "@/db";
-import type { TResource } from "@/models";
+// import type { TResource } from "@/models";
 
-type TResourceTree = (TResource & { isFolder: true; children: TResourceTree[] }) | (TResource & { isFolder: false; children?: undefined });
+// type TResourceTree = (TResource & { isFolder: true; children: TResourceTree[] }) | (TResource & { isFolder: false; children?: undefined });
 
-export const generateResourcesTree = (rows: TResource[]): TResourceTree[] => {
-	const resourceMap: Record<string, TResourceTree> = {};
-	const tree: TResourceTree[] = [];
+// export const generateResourcesTree = (rows: TResource[]): TResourceTree[] => {
+// 	const resourceMap: Record<string, TResourceTree> = {};
+// 	const tree: TResourceTree[] = [];
 
-	for (const res of rows) {
-		resourceMap[res.id] = res.isFolder ? { ...res, isFolder: true, children: [] } : { ...res, isFolder: false, children: undefined };
-	}
+// 	for (const res of rows) {
+// 		resourceMap[res.id] = res.isFolder ? { ...res, children: [], isFolder: true } : { ...res, children: undefined, isFolder: false };
+// 	}
 
-	for (const res of rows) {
-		if (res.parentId && resourceMap[res.parentId]) {
-			if (resourceMap[res.parentId].isFolder) {
-				resourceMap[res.parentId].children?.push(resourceMap[res.id]);
-			}
-		} else {
-			tree.push(resourceMap[res.id]);
-		}
-	}
+// 	for (const res of rows) {
+// 		if (res.parentId && resourceMap[res.parentId]) {
+// 			if (resourceMap[res.parentId].isFolder) {
+// 				resourceMap[res.parentId].children?.push(resourceMap[res.id]);
+// 			}
+// 		} else {
+// 			tree.push(resourceMap[res.id]);
+// 		}
+// 	}
 
-	return tree;
-};
+// 	return tree;
+// };
 
 export const generateIdAndPath = async (ownerId: string, parentId?: string) => {
 	let storagePath: string;
@@ -38,8 +38,8 @@ export const generateIdAndPath = async (ownerId: string, parentId?: string) => {
 
 		if (!parentFolder) {
 			throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-				message: MESSAGES.RESOURCE.PARENT_NOT_FOUND,
 				cause: "resources.helpers@generateIdAndPath#001",
+				message: MESSAGES.RESOURCE.PARENT_NOT_FOUND,
 			});
 		}
 
@@ -94,21 +94,6 @@ export const getUniqueFolderName = async (db: Omit<DB, "$client">, ownerId: stri
 	return `${name} (${maxNumber + 1})`;
 };
 
-export const getResourceByNameAndParent = async (db: DB, ownerId: string, name: string, parentId?: string | null) => {
-	return db.query.resources.findFirst({
-		where: (table, fn) => fn.and(fn.eq(table.ownerId, ownerId), fn.eq(table.name, name), parentId ? fn.eq(table.parentId, parentId) : fn.isNull(table.parentId)),
-	});
-};
-
-export const getUniqueFileName = async (db: DB, ownerId: string, fileName: string, parentId?: string | null) => {
-	let uniqueName = fileName;
-	let counter = 1;
-	const [name, extension] = fileName.split(/(?=\.[^.]+$)/);
-
-	// eslint-disable-next-line no-await-in-loop
-	while (await getResourceByNameAndParent(db, ownerId, uniqueName, parentId)) {
-		uniqueName = `${name} (${counter})${extension || ""}`;
-		counter += 1;
-	}
-	return uniqueName;
+export const generateNewStoragePath = (ownerId: string, resourceId: string, parentStoragePath?: string) => {
+	return parentStoragePath ? `${parentStoragePath}/${resourceId}` : `user_${ownerId}/${resourceId}`;
 };

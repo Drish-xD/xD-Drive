@@ -6,10 +6,10 @@ import * as schema from "./schema";
 const client = postgres(CONFIG.DATABASE_URL, { prepare: false });
 
 export const db = drizzle({
-	client,
-	schema,
 	casing: "snake_case",
+	client,
 	logger: CONFIG.DATABASE_LOGGING,
+	schema,
 });
 
 export type DB = typeof db;

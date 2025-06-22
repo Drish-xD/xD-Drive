@@ -7,6 +7,7 @@ const strToBoolean = z.coerce
 	.default("false");
 
 const configSchema = z
+	// biome-ignore assist/source/useSortedKeys: we need to keep the order of the keys
 	.object({
 		PORT: z.coerce.number().default(3000),
 		APP_ENV: z.enum(["prod", "test", "dev"]).default("dev"),

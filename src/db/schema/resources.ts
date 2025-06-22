@@ -14,31 +14,31 @@ import { users } from "./users";
 export const resources = pgTable(
 	"resources",
 	{
-		id: uuid().primaryKey().defaultRandom(),
-		ownerId: uuid()
-			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
-		name: varchar({ length: 255 }).notNull(),
-		parentId: uuid().references((): AnyPgColumn => resources.id, { onDelete: "cascade" }),
-		isFolder: boolean().default(false).notNull(),
-		storagePath: text().notNull(),
-		status: resourceStatusEnum().default("active").notNull(),
-		isFavorite: boolean().default(false).notNull(),
-
-		// File specific fields
-		mimeType: varchar({ length: 255 }),
-		size: bigint({ mode: "number" }).notNull().default(0),
 		contentHash: varchar({ length: 128 }),
+		deletedAt: timestamp(),
+		id: uuid().primaryKey().defaultRandom(),
+		isFavorite: boolean().default(false).notNull(),
+		isFolder: boolean().default(false).notNull(),
 
 		// Timestamps
 		lastAccessedAt: timestamp(),
-		deletedAt: timestamp(),
+
+		// File specific fields
+		mimeType: varchar({ length: 255 }),
+		name: varchar({ length: 255 }).notNull(),
+		ownerId: uuid()
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		parentId: uuid().references((): AnyPgColumn => resources.id, { onDelete: "cascade" }),
+		size: bigint({ mode: "number" }).notNull().default(0),
+		status: resourceStatusEnum().default("active").notNull(),
+		storagePath: text().notNull(),
 		...defaultTimestamps,
 	},
 	// Indexes
 	(table) => [
 		index("idx_resources_status").on(table.status),
-		uniqueIndex("idx_resources_content_hash").on(table.contentHash),
+		uniqueIndex("idx_resources_content_hash").on(table.contentHash, table.parentId, table.ownerId),
 		index("idx_resources_parent_id").on(table.parentId),
 		index("idx_resources_owner_id").on(table.ownerId),
 		index("idx_resources_name_parent").on(table.parentId, table.name, table.ownerId),
@@ -49,6 +49,8 @@ export const resources = pgTable(
  * Relations
  */
 export const resourcesRelations = relations(resources, ({ one, many }) => ({
+	activityLogs: many(activityLogs),
+	children: many(resources, { relationName: "parent" }),
 	owner: one(users, {
 		fields: [resources.ownerId],
 		references: [users.id],
@@ -57,9 +59,7 @@ export const resourcesRelations = relations(resources, ({ one, many }) => ({
 		fields: [resources.parentId],
 		references: [resources.id],
 	}),
-	children: many(resources, { relationName: "parent" }),
-	versions: many(resourceVersions),
 	shares: many(resourceShares),
 	tags: many(tags),
-	activityLogs: many(activityLogs),
+	versions: many(resourceVersions),
 }));

@@ -8,24 +8,24 @@ import { selectUserSchema, updateUserSchema } from "@/models";
  * Current User route
  */
 export const currentUser = createRoute({
-	path: "/me",
 	method: "get",
-	tags: ["Users"],
+	path: "/me",
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Get current user details",
 			schema: selectUserSchema,
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
 			message: MESSAGES.AUTH.UNAUTHORIZED,
+			status: HTTP_STATUSES.UNAUTHORIZED,
 		}),
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
+			status: HTTP_STATUSES.NOT_FOUND,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Users"],
 });
 
 export type TUsersMeRoute = typeof currentUser;
@@ -34,9 +34,8 @@ export type TUsersMeRoute = typeof currentUser;
  * Update User route
  */
 export const updateCurrentUser = createRoute({
-	path: "/me",
 	method: "put",
-	tags: ["Users"],
+	path: "/me",
 	request: {
 		body: createJson({
 			description: "Payload to update user",
@@ -51,19 +50,20 @@ export const updateCurrentUser = createRoute({
 			}),
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
 			message: MESSAGES.AUTH.UNAUTHORIZED,
+			status: HTTP_STATUSES.UNAUTHORIZED,
 		}),
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
+			status: HTTP_STATUSES.NOT_FOUND,
 		}),
 		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Users"],
 });
 
 export type TUpdateUserRoute = typeof updateCurrentUser;
@@ -72,9 +72,8 @@ export type TUpdateUserRoute = typeof updateCurrentUser;
  * Delete User route
  */
 export const deleteCurrentUser = createRoute({
-	path: "/me",
 	method: "delete",
-	tags: ["Users"],
+	path: "/me",
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Delete user",
@@ -87,15 +86,16 @@ export const deleteCurrentUser = createRoute({
 			}),
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
 			message: MESSAGES.AUTH.UNAUTHORIZED,
+			status: HTTP_STATUSES.UNAUTHORIZED,
 		}),
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
+			status: HTTP_STATUSES.NOT_FOUND,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Users"],
 });
 
 export type TDeleteUserRoute = typeof deleteCurrentUser;
@@ -104,9 +104,8 @@ export type TDeleteUserRoute = typeof deleteCurrentUser;
  * Users Listing route
  */
 export const users = createRoute({
-	path: "/",
 	method: "get",
-	tags: ["Users"],
+	path: "/",
 	request: {
 		query: createPaginationQuery(),
 	},
@@ -116,11 +115,12 @@ export const users = createRoute({
 			schema: createPaginationResponse(selectUserSchema),
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
 			message: MESSAGES.AUTH.UNAUTHORIZED,
+			status: HTTP_STATUSES.UNAUTHORIZED,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Users"],
 });
 
 export type TUsersRoute = typeof users;
@@ -129,9 +129,8 @@ export type TUsersRoute = typeof users;
  * User Details route
  */
 export const user = createRoute({
-	path: "/:id",
 	method: "get",
-	tags: ["Users"],
+	path: "/:id",
 	request: {
 		params: createUuidSchema({ description: "User ID" }),
 	},
@@ -141,19 +140,20 @@ export const user = createRoute({
 			schema: selectUserSchema,
 		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNAUTHORIZED,
 			message: MESSAGES.AUTH.UNAUTHORIZED,
+			status: HTTP_STATUSES.UNAUTHORIZED,
 		}),
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
+			status: HTTP_STATUSES.NOT_FOUND,
 		}),
 		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Users"],
 });
 
 export type TUserRoute = typeof user;

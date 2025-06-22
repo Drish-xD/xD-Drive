@@ -10,15 +10,15 @@ export const onError: ErrorHandler = (error, ctx) => {
 	if (error instanceof ZodError) {
 		return ctx.json<TValidationError>(
 			{
-				status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE,
-				statusText: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
 				error: {
 					code: String(error?.cause ?? "on-error.middleware@onError#001"),
+					issues: error?.flatten().fieldErrors ?? {},
 					message: error?.message ?? "Validation failed",
 					name: error?.name ?? "ZodError",
-					issues: error?.flatten().fieldErrors ?? {},
 					stack: error?.stack ?? "",
 				},
+				status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE,
+				statusText: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
 			},
 			{ status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE },
 		);
@@ -27,13 +27,13 @@ export const onError: ErrorHandler = (error, ctx) => {
 	if (error instanceof HTTPException) {
 		return ctx.json<TError>(
 			{
-				status: error.status,
-				statusText: getStatusKeyByCode(error.status),
 				error: {
 					code: String(error?.cause ?? "on-error.middleware@onError#002"),
 					message: error?.message ?? "Something went wrong",
 					stack: error?.stack ?? "",
 				},
+				status: error.status,
+				statusText: getStatusKeyByCode(error.status),
 			},
 			{ status: error.status },
 		);
@@ -41,13 +41,13 @@ export const onError: ErrorHandler = (error, ctx) => {
 
 	return ctx.json<TError>(
 		{
-			status: HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE,
-			statusText: HTTP_STATUSES.INTERNAL_SERVER_ERROR.KEY,
 			error: {
 				code: String(error?.cause ?? "on-error.middleware@onError#003"),
 				message: error?.message ?? "Something went wrong",
 				stack: error?.stack ?? "",
 			},
+			status: HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE,
+			statusText: HTTP_STATUSES.INTERNAL_SERVER_ERROR.KEY,
 		},
 		{ status: HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE },
 	);
@@ -58,19 +58,19 @@ export const handleZodError = (result: Parameters<Hook<any, AppBindings, any, an
 	if (!result.success) {
 		const { error, target } = result;
 
-		ctx.var.logger.trace({ target, error }, "Zod Validation error");
+		ctx.var.logger.trace({ error, target }, "Zod Validation error");
 
 		return ctx.json<TValidationError>(
 			{
-				status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE,
-				statusText: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
 				error: {
 					code: String(error?.cause ?? "on-error.middleware@onError#001"),
+					issues: error?.flatten().fieldErrors ?? {},
 					message: `Validation failed for '${target}'. Please ensure the provided value meets the required criteria.`,
 					name: error?.name ?? "ZodError",
-					issues: error?.flatten().fieldErrors ?? {},
 					stack: error?.stack ?? "",
 				},
+				status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE,
+				statusText: HTTP_STATUSES.UNPROCESSABLE_ENTITY.KEY,
 			},
 			{ status: HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE },
 		);

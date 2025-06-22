@@ -10,21 +10,21 @@ import { users } from "./users";
 export const resourceVersions = pgTable(
 	"resource_versions",
 	{
+		contentHash: varchar({ length: 128 }).notNull(),
+		createdAt: defaultTimestamps.createdAt,
+		createdBy: uuid()
+			.notNull()
+			.references(() => users.id),
 		id: uuid().primaryKey().defaultRandom(),
+		isCurrent: boolean().notNull().default(false),
 		resourceId: uuid()
 			.notNull()
 			.references(() => resources.id, { onDelete: "cascade" }),
 		size: bigint({ mode: "number" }).notNull(),
 		storagePath: text().notNull(),
-		contentHash: varchar({ length: 128 }).notNull(),
-		createdBy: uuid()
-			.notNull()
-			.references(() => users.id),
 
 		// Versioning
 		versionNumber: integer().notNull(),
-		isCurrent: boolean().notNull().default(false),
-		createdAt: defaultTimestamps.createdAt,
 	},
 	(table) => [
 		uniqueIndex("idx_resource_versions_number").on(table.versionNumber, table.resourceId),
@@ -37,12 +37,12 @@ export const resourceVersions = pgTable(
  * Relations
  */
 export const resourceVersionsRelations = relations(resourceVersions, ({ one }) => ({
-	resource: one(resources, {
-		fields: [resourceVersions.resourceId],
-		references: [resources.id],
-	}),
 	createdBy: one(users, {
 		fields: [resourceVersions.createdBy],
 		references: [users.id],
+	}),
+	resource: one(resources, {
+		fields: [resourceVersions.resourceId],
+		references: [resources.id],
 	}),
 }));

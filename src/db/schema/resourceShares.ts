@@ -11,21 +11,21 @@ import { users } from "./users";
 export const resourceShares = pgTable(
 	"resource_shares",
 	{
-		id: uuid().primaryKey().defaultRandom(),
-		resourceId: uuid()
-			.notNull()
-			.references(() => resources.id, { onDelete: "cascade" }),
-
-		grantedTo: uuid().references(() => resources.id, { onDelete: "cascade" }),
-		isPublic: boolean().notNull().default(false),
 		accessLevel: accessLevelEnum().notNull().default("viewer"),
-		publicLinkToken: varchar({ length: 128 }),
 		createdBy: uuid()
 			.notNull()
 			.references(() => users.id),
 
 		// Timestamps
 		expiresAt: timestamp(),
+
+		grantedTo: uuid().references(() => resources.id, { onDelete: "cascade" }),
+		id: uuid().primaryKey().defaultRandom(),
+		isPublic: boolean().notNull().default(false),
+		publicLinkToken: varchar({ length: 128 }),
+		resourceId: uuid()
+			.notNull()
+			.references(() => resources.id, { onDelete: "cascade" }),
 		...defaultTimestamps,
 	},
 
@@ -42,18 +42,18 @@ export const resourceShares = pgTable(
  * Relations
  */
 export const resourceSharesRelations = relations(resourceShares, ({ one }) => ({
-	resource: one(resources, {
-		fields: [resourceShares.resourceId],
-		references: [resources.id],
+	creator: one(users, {
+		fields: [resourceShares.createdBy],
+		references: [users.id],
+		relationName: "creator",
 	}),
 	grantedToUser: one(users, {
 		fields: [resourceShares.grantedTo],
 		references: [users.id],
 		relationName: "granted",
 	}),
-	creator: one(users, {
-		fields: [resourceShares.createdBy],
-		references: [users.id],
-		relationName: "creator",
+	resource: one(resources, {
+		fields: [resourceShares.resourceId],
+		references: [resources.id],
 	}),
 }));

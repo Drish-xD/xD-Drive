@@ -7,9 +7,8 @@ import { insertUserSchema, loginUserSchema, selectUserSchema } from "@/models";
  * Register User route
  */
 export const register = createRoute({
-	path: "/register",
 	method: "post",
-	tags: ["Auth"],
+	path: "/register",
 	request: {
 		body: createJson({
 			description: "Payload to register new user",
@@ -22,16 +21,17 @@ export const register = createRoute({
 			schema: selectUserSchema,
 		}),
 		[HTTP_STATUSES.CONFLICT.CODE]: createErrorJson({
-			status: HTTP_STATUSES.CONFLICT,
 			message: MESSAGES.AUTH.USER_ALREADY_EXISTS,
+			status: HTTP_STATUSES.CONFLICT,
 		}),
 		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 			zodIssueSchema: insertUserSchema,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Auth"],
 });
 
 export type TRegisterRoute = typeof register;
@@ -40,9 +40,8 @@ export type TRegisterRoute = typeof register;
  * Login User route
  */
 export const login = createRoute({
-	path: "/login",
 	method: "post",
-	tags: ["Auth"],
+	path: "/login",
 	request: {
 		body: createJson({
 			description: "Body to login user",
@@ -57,16 +56,17 @@ export const login = createRoute({
 			}),
 		}),
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
+			status: HTTP_STATUSES.NOT_FOUND,
 		}),
 		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 			zodIssueSchema: loginUserSchema,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Auth"],
 });
 
 export type TLoginRoute = typeof login;
@@ -75,9 +75,8 @@ export type TLoginRoute = typeof login;
  * Refresh Token route
  */
 export const refreshToken = createRoute({
-	path: "/refresh-token",
 	method: "post",
-	tags: ["Auth"],
+	path: "/refresh-token",
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Refresh Token(s)",
@@ -86,15 +85,16 @@ export const refreshToken = createRoute({
 			}),
 		}),
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
+			status: HTTP_STATUSES.NOT_FOUND,
 		}),
 		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
-			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Auth"],
 });
 
 export type TRefreshTokenRoute = typeof refreshToken;
@@ -103,9 +103,8 @@ export type TRefreshTokenRoute = typeof refreshToken;
  * Logout User route
  */
 export const logout = createRoute({
-	path: "/logout",
 	method: "delete",
-	tags: ["Auth"],
+	path: "/logout",
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Logout User",
@@ -115,6 +114,7 @@ export const logout = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Auth"],
 });
 
 export type TLogoutRoute = typeof logout;
@@ -123,9 +123,8 @@ export type TLogoutRoute = typeof logout;
  * Verify User Email route
  */
 export const verifyEmail = createRoute({
-	path: "/verify-email",
 	method: "get",
-	tags: ["Auth"],
+	path: "/verify-email",
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Verify Email",
@@ -134,15 +133,16 @@ export const verifyEmail = createRoute({
 			}),
 		}),
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
-			status: HTTP_STATUSES.NOT_FOUND,
 			message: MESSAGES.AUTH.USER_NOT_FOUND,
+			status: HTTP_STATUSES.NOT_FOUND,
 		}),
 		[HTTP_STATUSES.CONFLICT.CODE]: createErrorJson({
-			status: HTTP_STATUSES.CONFLICT,
 			message: MESSAGES.AUTH.USER_ALREADY_VERIFIED,
+			status: HTTP_STATUSES.CONFLICT,
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	tags: ["Auth"],
 });
 
 export type TVerifyEmailRoute = typeof verifyEmail;

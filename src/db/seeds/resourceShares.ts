@@ -11,11 +11,11 @@ const fakeResourceShares = faker.helpers.multiple(
 
 		return {
 			accessLevel: faker.helpers.arrayElement(accessLevelEnum.enumValues),
-			isPublic,
-			publicLinkToken: faker.string.uuid(),
+			createdBy: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
 			expiresAt: faker.date.soon({ days: 10 }),
 			grantedTo: isPublic ? sql`NULL` : sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
-			createdBy: sql`(SELECT id FROM users ORDER BY RANDOM() LIMIT 1)`,
+			isPublic,
+			publicLinkToken: faker.string.uuid(),
 			resourceId: sql`(SELECT id FROM resources ORDER BY RANDOM() LIMIT 1)`,
 		} satisfies PartialUnknown<TInsertResourceShare>;
 	},
