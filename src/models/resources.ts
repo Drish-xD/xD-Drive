@@ -4,30 +4,25 @@ import { resources } from "@/db/schema";
 /**
  * Zod Schema
  */
-export const selectResourceSchema = createSelectSchema(resources).meta({ title: "SelectResource" });
+export const selectResourceSchema = createSelectSchema(resources).meta({ id: "Resource" });
 
 export const insertResourceSchema = createInsertSchema(resources, {
 	isFavorite: (schema) => schema.default(false),
 	name: (schema) => schema.min(1, { error: "Name is required" }),
 	parentId: (schema) => schema.nullable().default(null),
-})
-	.omit({ id: true, ...omitTimestamps })
-	.meta({ title: "InsertResource" });
+}).omit({ id: true, ...omitTimestamps });
 
 export const updateResourceSchema = createUpdateSchema(resources).pick({ name: true, parentId: true, storagePath: true });
 
-export const renameResourceSchema = updateResourceSchema
-	.pick({ name: true })
-	.extend({ name: z.string().trim().min(1, "Name is required") })
-	.meta({ title: "RenameResource" });
-export const moveResourceSchema = updateResourceSchema.pick({ parentId: true }).meta({ title: "MoveResource" });
+export const renameResourceSchema = updateResourceSchema.pick({ name: true }).extend({ name: z.string().trim().min(1, "Name is required") });
 
-export const createFolderSchema = insertResourceSchema.pick({ name: true }).extend({ parentId: z.string().optional() }).meta({ title: "CreateFolderPayload" });
+export const moveResourceSchema = updateResourceSchema.pick({ parentId: true });
+
+export const createFolderSchema = insertResourceSchema.pick({ name: true }).extend({ parentId: z.string().optional() });
 
 export const uploadFileSchema = insertResourceSchema
 	.pick({ parentId: true })
-	.extend({ file: z.file().openapi({ description: "The file to upload", format: "binary", type: "string" }), parentId: z.uuid().optional() })
-	.meta({ title: "UploadFilePayload" });
+	.extend({ file: z.file().openapi({ description: "The file to upload", format: "binary", type: "string" }), parentId: z.uuid().optional() });
 
 export type TResource = inferType<typeof selectResourceSchema>;
 export type TInsertResource = inferType<typeof insertResourceSchema>;

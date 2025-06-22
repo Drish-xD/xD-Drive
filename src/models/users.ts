@@ -24,7 +24,7 @@ const userExample = {
 /**
  * Zod Schema
  */
-export const selectUserSchema = createSelectSchema(users).omit({ passwordHash: true }).meta({ example: userExample, title: "User" });
+export const selectUserSchema = createSelectSchema(users).omit({ passwordHash: true }).meta({ example: userExample, id: "User" });
 
 export const insertUserSchema = createInsertSchema(users, {
 	displayName: (schema) => schema.min(1, { error: "Display name is required" }),
@@ -40,7 +40,6 @@ export const insertUserSchema = createInsertSchema(users, {
 			fullName: userExample.fullName,
 			password: userExample.password,
 		},
-		title: "InsertUser",
 	});
 
 export const updateUserSchema = createUpdateSchema(users, {
@@ -56,7 +55,6 @@ export const updateUserSchema = createUpdateSchema(users, {
 			email: userExample.email,
 			fullName: userExample.fullName,
 		},
-		title: "UpdateUser",
 	});
 
 export const loginUserSchema = insertUserSchema
@@ -69,7 +67,6 @@ export const loginUserSchema = insertUserSchema
 			email: userExample.email,
 			password: userExample.password,
 		},
-		title: "LoginUser",
 	});
 
 export type TUser = inferType<typeof selectUserSchema>;
