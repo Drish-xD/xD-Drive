@@ -75,7 +75,12 @@ export const createPaginationQuery = () => {
 			}),
 			order: stringParse(orderBySchema),
 			filters: stringParse(filtersSchema),
-			includeTotal: z.stringbool().default(false).meta({ description: "Include total count in the response", example: "false" }),
+			includeTotal: z
+				.enum(["true", "false"])
+				.transform((x) => x === "true")
+				.pipe(z.boolean())
+				.default(false)
+				.meta({ description: "Include total count in the response", example: "false" }),
 		})
 		.transform((_, ctx) => {
 			if (ctx.value.limit === -1) {
@@ -127,9 +132,7 @@ export const orderByQueryBuilder =
 /**
  * Create where clause using filters for SQL query
  */
-export const whereQueryBuilder = (filters: TFilter[], config: WhereBuilderConfig): SQL | undefined => {
-	if (!filters.length) return undefined;
-
+export const whereQueryBuilder = (filters: TFilter[], config: WhereBuilderConfig, defaultWhere?: SQL): SQL | undefined => {
 	const clauses = filters
 		.map((filter) => {
 			const conf = config[filter.id];
@@ -141,5 +144,5 @@ export const whereQueryBuilder = (filters: TFilter[], config: WhereBuilderConfig
 		})
 		.filter(Boolean);
 
-	return clauses.length ? and(...(clauses as SQL[])) : undefined;
+	return clauses.length ? and(...(clauses as SQL[]), defaultWhere) : defaultWhere;
 };

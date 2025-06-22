@@ -18,15 +18,15 @@ export const updateResourceSchema = createUpdateSchema(resources, {
 	name: (schema) => schema.min(1, { error: "Name is required" }),
 	parentId: (schema) => schema.nullable().default(null),
 })
-	.omit({ id: true, ...omitTimestamps })
+	.pick({ name: true, parentId: true, storagePath: true })
 	.partial()
 	.meta({ title: "UpdateResource" });
 
-export const createFolderSchema = insertResourceSchema.pick({ name: true, parentId: true }).meta({ title: "CreateFolderPayload" });
+export const createFolderSchema = insertResourceSchema.pick({ name: true }).extend({ parentId: z.string().optional() }).meta({ title: "CreateFolderPayload" });
 
 export const uploadFileSchema = insertResourceSchema
 	.pick({ parentId: true })
-	.extend({ file: z.file({ error: "Invalid file format" }) })
+	.extend({ file: z.file().openapi({ type: "string", format: "binary", description: "The file to upload" }), parentId: z.uuid().optional() })
 	.meta({ title: "UploadFilePayload" });
 
 export type TResource = inferType<typeof selectResourceSchema>;

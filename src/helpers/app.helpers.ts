@@ -12,7 +12,7 @@ export const createApp = () => {
 };
 
 export const initOpenAPI = (app: AppInstance) => {
-	app.doc("/docs/meta", {
+	app.doc("/docs/openapi", {
 		openapi: "3.1.0",
 		info: {
 			version: packageJSON.version,
@@ -32,7 +32,7 @@ export const initOpenAPI = (app: AppInstance) => {
 		Scalar({
 			theme: "saturn",
 			layout: "modern",
-			url: "/docs/meta",
+			url: "/docs/openapi",
 		}),
 	);
 

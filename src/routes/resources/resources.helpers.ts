@@ -26,17 +26,9 @@ export const generateResourcesTree = (rows: TResource[]): TResourceTree[] => {
 	return tree;
 };
 
-export const generateIdAndPath = async (ownerId: string, parentId: string | null, isFolder: boolean) => {
+export const generateIdAndPath = async (ownerId: string, parentId?: string) => {
 	let storagePath: string;
-
-	let postfix: string;
-	const newId = crypto.randomUUID();
-
-	if (isFolder) {
-		postfix = parentId ? parentId : "";
-	} else {
-		postfix = newId;
-	}
+	const uuid = crypto.randomUUID();
 
 	if (parentId) {
 		const parentFolder = await db.query.resources.findFirst({
@@ -51,22 +43,23 @@ export const generateIdAndPath = async (ownerId: string, parentId: string | null
 			});
 		}
 
-		storagePath = `${parentFolder.storagePath}/${postfix}`;
+		storagePath = `${parentFolder.storagePath}/${uuid}`;
 	} else {
-		storagePath = `/${ownerId}${postfix ? `/${postfix}` : ""}`;
+		storagePath = `user_${ownerId}/${uuid}`;
 	}
 
-	return { id: isFolder ? newId : postfix, storagePath };
+	return { id: uuid, storagePath };
 };
 
-export const computeFileHash = async (file: File) => {
-	const arrayBuffer = await file.arrayBuffer();
-	const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
+export const computeFileHash = async (file: File, maxBytes = 1024 * 1024): Promise<string> => {
+	const blob = file.slice(0, maxBytes);
+	const buffer = await blob.arrayBuffer();
+	const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
 	return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 };
 
-export const getUniqueFolderName = async (db: Omit<DB, "$client">, ownerId: string, parentId: string | null, name: string) => {
+export const getUniqueFolderName = async (db: Omit<DB, "$client">, ownerId: string, name: string, parentId?: string) => {
 	const similarFolders = await db.query.resources.findMany({
 		columns: { name: true },
 		where: (table, fn) =>
@@ -99,4 +92,23 @@ export const getUniqueFolderName = async (db: Omit<DB, "$client">, ownerId: stri
 	}
 
 	return `${name} (${maxNumber + 1})`;
+};
+
+export const getResourceByNameAndParent = async (db: DB, ownerId: string, name: string, parentId?: string | null) => {
+	return db.query.resources.findFirst({
+		where: (table, fn) => fn.and(fn.eq(table.ownerId, ownerId), fn.eq(table.name, name), parentId ? fn.eq(table.parentId, parentId) : fn.isNull(table.parentId)),
+	});
+};
+
+export const getUniqueFileName = async (db: DB, ownerId: string, fileName: string, parentId?: string | null) => {
+	let uniqueName = fileName;
+	let counter = 1;
+	const [name, extension] = fileName.split(/(?=\.[^.]+$)/);
+
+	// eslint-disable-next-line no-await-in-loop
+	while (await getResourceByNameAndParent(db, ownerId, uniqueName, parentId)) {
+		uniqueName = `${name} (${counter})${extension || ""}`;
+		counter += 1;
+	}
+	return uniqueName;
 };

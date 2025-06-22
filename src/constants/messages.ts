@@ -45,4 +45,6 @@ export const RESOURCE = {
 	NOT_FOUND: "Folder/File not found",
 
 	PARENT_NOT_FOUND: "Parent folder not found",
+	UPLOAD_FAILED: "File upload failed",
+	FILE_ALREADY_EXISTS: "File already exists",
 } as const;

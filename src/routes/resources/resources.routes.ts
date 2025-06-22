@@ -2,7 +2,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { createPaginationQuery, createPaginationResponse } from "@/helpers/pagination.helpers";
 import { createErrorJson, createJson, createMessageSchema, createMultiPartForm, createUuidSchema } from "@/helpers/schema.helpers";
-import { createFolderSchema, selectResourceSchema, uploadFileSchema } from "@/models";
+import { createFolderSchema, selectResourceSchema, updateResourceSchema, uploadFileSchema } from "@/models";
 
 /**
  * Resources Listing route
@@ -63,6 +63,117 @@ export const resource = createRoute({
 export type TResourceRoute = typeof resource;
 
 /**
+ * Get Resource Children route
+ */
+export const getResourceChildren = createRoute({
+	path: "/:id/children",
+	method: "get",
+	tags: ["Resources"],
+	request: {
+		params: createUuidSchema({ description: "Resource ID" }),
+		query: createPaginationQuery(),
+	},
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Get a resource children",
+			schema: createPaginationResponse(selectResourceSchema),
+		}),
+		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNAUTHORIZED,
+			message: MESSAGES.AUTH.UNAUTHORIZED,
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.RESOURCE.NOT_FOUND,
+		}),
+		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
+			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TGetResourceChildrenRoute = typeof getResourceChildren;
+
+/**
+ * Update Resource route
+ */
+export const updateResource = createRoute({
+	path: "/:id",
+	method: "put",
+	tags: ["Resources"],
+	request: {
+		params: createUuidSchema({ description: "Resource ID" }),
+		body: createJson({
+			description: "Payload to update a resource",
+			schema: updateResourceSchema,
+		}),
+	},
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: createJson({
+			description: "Update a resource",
+			schema: selectResourceSchema,
+		}),
+		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNAUTHORIZED,
+			message: MESSAGES.AUTH.UNAUTHORIZED,
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.RESOURCE.NOT_FOUND,
+		}),
+		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
+			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TUpdateResourceRoute = typeof updateResource;
+
+/**
+ * Download Resource route
+ */
+export const downloadResource = createRoute({
+	path: "/:id/download",
+	method: "get",
+	tags: ["Resources"],
+	request: {
+		params: createUuidSchema({ description: "Resource ID" }),
+	},
+	responses: {
+		[HTTP_STATUSES.OK.CODE]: {
+			description: "Download a resource",
+			content: {
+				"application/octet-stream": {
+					schema: {
+						type: "string",
+						format: "binary",
+					},
+				},
+			},
+		},
+		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNAUTHORIZED,
+			message: MESSAGES.AUTH.UNAUTHORIZED,
+		}),
+		[HTTP_STATUSES.NOT_FOUND.CODE]: createErrorJson({
+			status: HTTP_STATUSES.NOT_FOUND,
+			message: MESSAGES.RESOURCE.NOT_FOUND,
+		}),
+		[HTTP_STATUSES.UNPROCESSABLE_ENTITY.CODE]: createErrorJson({
+			status: HTTP_STATUSES.UNPROCESSABLE_ENTITY,
+			message: HTTP_STATUSES.UNPROCESSABLE_ENTITY.PHRASE,
+		}),
+		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
+	},
+});
+
+export type TDownloadResourceRoute = typeof downloadResource;
+
+/**
  * Create New Folder route
  */
 export const createFolder = createRoute({
@@ -76,7 +187,7 @@ export const createFolder = createRoute({
 		}),
 	},
 	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
+		[HTTP_STATUSES.CREATED.CODE]: createJson({
 			description: "Created a new folder",
 			schema: createMessageSchema({
 				example: MESSAGES.RESOURCE.CREATED_FOLDER_SUCCESS,
@@ -110,8 +221,8 @@ export const uploadFile = createRoute({
 		}),
 	},
 	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Update user details",
+		[HTTP_STATUSES.CREATED.CODE]: createJson({
+			description: "Uploaded a new file",
 			schema: createMessageSchema({ example: MESSAGES.RESOURCE.UPLOADED_FILE_SUCCESS }).extend({
 				data: selectResourceSchema,
 			}),
