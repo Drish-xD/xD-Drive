@@ -60,7 +60,7 @@ export type TExample<T extends z.ZodObject = z.ZodObject> = BaseExample & {
 export type WhereBuilderConfig = {
 	[key: string]: {
 		column: Column;
-		operator: (column: Column, value: unknown) => SQL;
+		operator: (column: Column, value: unknown) => SQL | undefined;
 		transform?: (val: string) => unknown;
 	};
 };

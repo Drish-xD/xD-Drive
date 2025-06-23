@@ -7,7 +7,7 @@ import { activityLogs } from "@/db/schema";
 
 export const selectActivityLogSchema = createSelectSchema(activityLogs).meta({ id: "ActivityLog" });
 
-export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({ createdAt: true, id: true });
+export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({ createdAt: true, id: true, userId: true });
 
 export const updateActivityLogSchema = createUpdateSchema(activityLogs).omit({ createdAt: true, id: true }).partial();
 

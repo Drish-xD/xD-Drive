@@ -58,3 +58,13 @@ export const RESOURCE = {
 	UPLOAD_FAILED: "File upload failed",
 	UPLOADED_FILE_SUCCESS: "File uploaded successfully!",
 } as const;
+
+export const ACTIVITY = {
+	LOG_ACTIVITY_FAILED: "Activity log creation failed",
+	LOG_ACTIVITY_SUCCESS: "Activity log created successfully!",
+	NOT_FOUND: "Activity log not found",
+	RESOURCE_ACTIVITY_FAILED: "Resource activity logs retrieval failed",
+	RESOURCE_ACTIVITY_SUCCESS: "Resource activity logs retrieved successfully",
+	USER_ACTIVITY_FAILED: "User activity logs retrieval failed",
+	USER_ACTIVITY_SUCCESS: "User activity logs retrieved successfully",
+} as const;
