@@ -19,7 +19,7 @@ export const resourceShares = pgTable(
 		// Timestamps
 		expiresAt: timestamp(),
 
-		grantedTo: uuid().references(() => resources.id, { onDelete: "cascade" }),
+		grantedTo: uuid().references(() => users.id, { onDelete: "cascade" }),
 		id: uuid().primaryKey().defaultRandom(),
 		isPublic: boolean().notNull().default(false),
 		publicLinkToken: varchar({ length: 128 }),

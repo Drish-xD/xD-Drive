@@ -1,6 +1,7 @@
+import { differenceInSeconds } from "date-fns";
 import { and, eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import { HTTP_STATUSES, MESSAGES } from "@/constants";
+import { DEFAULT_SIGNED_URL_EXPIRY_IN_SECONDS, HTTP_STATUSES, MESSAGES } from "@/constants";
 import { storage } from "@/db/lib/storage";
 import { resources as resourcesTable, users as usersTable } from "@/db/schema";
 import type { AppRouteHandler } from "@/helpers/types";
@@ -15,7 +16,7 @@ import type {
 	TRestoreResourceRoute,
 	TUploadFileRoute,
 } from "./resource.routes";
-import { computeFileHash, generateIdAndPath, generateNewStoragePath, getUniqueFolderName } from "./resources.helpers";
+import { canAccessResource, computeFileHash, generateIdAndPath, generateNewStoragePath, getUniqueFolderName } from "./resources.helpers";
 
 /**
  * Create new Folder
@@ -197,24 +198,32 @@ export const resource: AppRouteHandler<TResourceRoute> = async (ctx) => {
  * Download Resource
  */
 export const downloadResource: AppRouteHandler<TDownloadResourceRoute> = async (ctx) => {
-	const userId = ctx.get("userData").id;
+	const userId = ctx.get("userData")?.id;
 	const resourceId = ctx.req.valid("param").id;
+	const token = ctx.req.valid("query").token;
 
-	const details = await ctx.var.db.query.resources.findFirst({
-		where: (r, { and, eq }) => and(eq(r.ownerId, userId), eq(r.id, resourceId), eq(r.isFolder, false)),
-	});
+	const { isAllowed, resource, share } = await canAccessResource(userId, resourceId, token);
+	const { storagePath, ownerId, ...rest } = resource;
 
-	if (!details) {
-		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-			cause: "resources.handlers@downloadResource#001",
-			message: MESSAGES.RESOURCE.NOT_FOUND,
+	if (!isAllowed) {
+		throw new HTTPException(HTTP_STATUSES.FORBIDDEN.CODE, {
+			cause: "resources.handlers@downloadResource#003",
+			message: MESSAGES.RESOURCE.ACCESS_DENIED,
 		});
 	}
 
-	ctx.res.headers.set("Content-Disposition", `attachment; filename="${details.name}"`);
-	ctx.res.headers.set("Content-Type", details.mimeType as string);
+	const expiryInSeconds = share?.expiresAt ? differenceInSeconds(new Date(share.expiresAt), new Date()) : DEFAULT_SIGNED_URL_EXPIRY_IN_SECONDS;
 
-	return ctx.body("dummy file content", HTTP_STATUSES.OK.CODE);
+	const { data } = await storage.from("uploads").createSignedUrl(storagePath, expiryInSeconds);
+
+	if (!data?.signedUrl) {
+		throw new HTTPException(HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE, {
+			cause: "resources.handlers@downloadResource#002",
+			message: MESSAGES.RESOURCE.DOWNLOAD_FAILED,
+		});
+	}
+
+	return ctx.json({ url: data.signedUrl, ...rest }, HTTP_STATUSES.OK.CODE);
 };
 
 /**

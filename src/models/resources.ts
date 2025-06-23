@@ -24,6 +24,10 @@ export const uploadFileSchema = insertResourceSchema
 	.pick({ parentId: true })
 	.extend({ file: z.file().openapi({ description: "The file to upload", format: "binary", type: "string" }), parentId: z.uuid().optional() });
 
+export const downloadResourceSchema = selectResourceSchema.pick({ createdAt: true, id: true, mimeType: true, name: true, updatedAt: true }).extend({ url: z.url() });
+
+export const downloadResourceQuerySchema = z.object({ token: z.string().optional() });
+
 export type TResource = inferType<typeof selectResourceSchema>;
 export type TInsertResource = inferType<typeof insertResourceSchema>;
 export type TUpdateResource = inferType<typeof updateResourceSchema>;
