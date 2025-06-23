@@ -16,7 +16,7 @@ export const register = createRoute({
 		}),
 	},
 	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
+		[HTTP_STATUSES.CREATED.CODE]: createJson({
 			description: MESSAGES.AUTH.REGISTERED,
 			schema: selectUserSchema,
 		}),

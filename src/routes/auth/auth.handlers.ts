@@ -35,7 +35,7 @@ export const register: AppRouteHandler<TRegisterRoute> = async (ctx) => {
 		.values({ email, passwordHash: hashedPassword, ...body })
 		.returning();
 
-	return ctx.json(returningUser, HTTP_STATUSES.OK.CODE);
+	return ctx.json(returningUser, HTTP_STATUSES.CREATED.CODE);
 };
 
 /**
