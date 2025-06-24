@@ -10,16 +10,18 @@ import type { TGetResourceActivityRoute, TGetUserActivityRoute } from "./activit
  * Get user activity
  */
 export const getUserActivity: AppRouteHandler<TGetUserActivityRoute> = async (ctx) => {
-	const db = ctx.get("db");
+	const { logger, db } = ctx.var;
 	const userId = ctx.get("userData")?.id;
 	const { page, limit, filters, includeTotal, offset, order } = ctx.req.valid("query");
+
+	logger.debug("activity.handlers@getUserActivity#start", { filters, includeTotal, limit, offset, order, page, userId });
 
 	const orderBy = orderByQueryBuilder(order);
 	const where = whereQueryBuilder(
 		filters,
 		{
-			activityType: {
-				column: activityLogsTable.activityType,
+			actionType: {
+				column: activityLogsTable.actionType,
 				operator: eq,
 			},
 			createdAt: {
@@ -44,6 +46,7 @@ export const getUserActivity: AppRouteHandler<TGetUserActivityRoute> = async (ct
 		}),
 		totalCountQueryBuilder(activityLogsTable, includeTotal, where),
 	]);
+	logger.debug("activity.handlers@getUserActivity#afterQuery", { logsCount: logs.length, totalCount });
 	const pageCount = Math.ceil((totalCount ?? logs.length) / limit);
 
 	return ctx.json(
@@ -67,16 +70,18 @@ export const getUserActivity: AppRouteHandler<TGetUserActivityRoute> = async (ct
  * Get resource activity
  */
 export const getResourceActivity: AppRouteHandler<TGetResourceActivityRoute> = async (ctx) => {
-	const db = ctx.get("db");
+	const { logger, db } = ctx.var;
 	const resourceId = ctx.req.valid("param").id;
 	const { page, limit, filters, includeTotal, offset, order } = ctx.req.valid("query");
+
+	logger.debug("activity.handlers@getResourceActivity#start", { filters, includeTotal, limit, offset, order, page, resourceId });
 
 	const orderBy = orderByQueryBuilder(order);
 	const where = whereQueryBuilder(
 		filters,
 		{
-			activityType: {
-				column: activityLogsTable.activityType,
+			actionType: {
+				column: activityLogsTable.actionType,
 				operator: eq,
 			},
 			createdAt: {
@@ -101,6 +106,7 @@ export const getResourceActivity: AppRouteHandler<TGetResourceActivityRoute> = a
 		}),
 		totalCountQueryBuilder(activityLogsTable, includeTotal, where),
 	]);
+	logger.debug("activity.handlers@getResourceActivity#afterQuery", { logsCount: logs.length, totalCount });
 	const pageCount = Math.ceil((totalCount ?? logs.length) / limit);
 
 	return ctx.json(
