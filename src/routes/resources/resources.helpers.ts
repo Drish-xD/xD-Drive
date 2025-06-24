@@ -108,13 +108,14 @@ export const canAccessResource = async (userId: string, resourceId: string, toke
 		columns: {
 			createdAt: true,
 			id: true,
+			isFolder: true,
 			mimeType: true,
 			name: true,
 			ownerId: true,
 			storagePath: true,
 			updatedAt: true,
 		},
-		where: (r, { and, eq }) => and(eq(r.id, resourceId), eq(r.isFolder, false), eq(r.status, "active")),
+		where: (r, { and, eq }) => and(eq(r.id, resourceId), eq(r.status, "active")),
 	});
 
 	if (!resource) {

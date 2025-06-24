@@ -5,6 +5,7 @@ import { DEFAULT_SIGNED_URL_EXPIRY_IN_SECONDS, HTTP_STATUSES, MESSAGES } from "@
 import { storage } from "@/db/lib/storage";
 import { resources as resourcesTable, users as usersTable } from "@/db/schema";
 import type { AppRouteHandler } from "@/helpers/types";
+import { logActivity } from "@/routes/activity/activity.helpers";
 import type {
 	TArchiveResourceRoute,
 	TCreateFolderRoute,
@@ -22,7 +23,7 @@ import { canAccessResource, computeFileHash, generateIdAndPath, generateNewStora
  * Create new Folder
  */
 export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => {
-	const { db, logger, userData } = ctx.var;
+	const { db, logger, userData, requestId } = ctx.var;
 	const ownerId = userData.id;
 	const { name, parentId } = ctx.req.valid("json");
 	const { id, storagePath } = await generateIdAndPath(ownerId, parentId);
@@ -66,6 +67,15 @@ export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => 
 			});
 		});
 
+	logActivity({
+		actionType: "create",
+		details: { name: uniqueName },
+		id: requestId,
+		resourceId: newCreatedFolder.id,
+		targetType: "folder",
+		userId: ownerId,
+	});
+
 	return ctx.json(
 		{
 			data: newCreatedFolder,
@@ -79,7 +89,7 @@ export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => 
  * Upload new File
  */
 export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
-	const { db, logger, userData } = ctx.var;
+	const { db, logger, userData, requestId } = ctx.var;
 	const ownerId = userData.id;
 	const { parentId, file } = ctx.req.valid("form");
 
@@ -156,6 +166,15 @@ export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
 			return newFile;
 		});
 
+		logActivity({
+			actionType: "upload",
+			details: { mimeType: file.type, name: file.name },
+			id: requestId,
+			resourceId: newFile.id,
+			targetType: "file",
+			userId: ownerId,
+		});
+
 		return ctx.json(
 			{
 				data: newFile,
@@ -201,7 +220,7 @@ export const resource: AppRouteHandler<TResourceRoute> = async (ctx) => {
  * Download Resource
  */
 export const downloadResource: AppRouteHandler<TDownloadResourceRoute> = async (ctx) => {
-	const { userData } = ctx.var;
+	const { userData, requestId } = ctx.var;
 	const userId = userData?.id;
 	const resourceId = ctx.req.valid("param").id;
 	const token = ctx.req.valid("query").token;
@@ -227,6 +246,14 @@ export const downloadResource: AppRouteHandler<TDownloadResourceRoute> = async (
 		});
 	}
 
+	logActivity({
+		actionType: "download",
+		id: requestId,
+		resourceId,
+		targetType: resource.isFolder ? "folder" : "file",
+		userId,
+	});
+
 	return ctx.json({ url: data.signedUrl, ...rest }, HTTP_STATUSES.OK.CODE);
 };
 
@@ -234,7 +261,7 @@ export const downloadResource: AppRouteHandler<TDownloadResourceRoute> = async (
  * Rename Resource
  */
 export const renameResource: AppRouteHandler<TRenameResourceRoute> = async (ctx) => {
-	const { db, userData } = ctx.var;
+	const { db, userData, requestId } = ctx.var;
 	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 	const { name } = ctx.req.valid("json");
@@ -252,6 +279,15 @@ export const renameResource: AppRouteHandler<TRenameResourceRoute> = async (ctx)
 		});
 	}
 
+	logActivity({
+		actionType: "rename",
+		details: { name },
+		id: requestId,
+		resourceId,
+		targetType: updated.isFolder ? "folder" : "file",
+		userId,
+	});
+
 	return ctx.json(updated, HTTP_STATUSES.OK.CODE);
 };
 
@@ -259,7 +295,7 @@ export const renameResource: AppRouteHandler<TRenameResourceRoute> = async (ctx)
  * Move Resource
  */
 export const moveFile: AppRouteHandler<TMoveFileRoute> = async (ctx) => {
-	const { db, userData } = ctx.var;
+	const { db, userData, requestId } = ctx.var;
 	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 	const { parentId } = ctx.req.valid("json");
@@ -320,6 +356,16 @@ export const moveFile: AppRouteHandler<TMoveFileRoute> = async (ctx) => {
 			});
 		}
 
+		// Log activity (fire-and-forget)
+		logActivity({
+			actionType: "move",
+			details: { newParentId: parentId },
+			id: requestId,
+			resourceId,
+			targetType: "file",
+			userId,
+		});
+
 		return ctx.json(updated, HTTP_STATUSES.OK.CODE);
 	} catch (error) {
 		await storage.from("uploads").move(newStoragePath, resource.storagePath);
@@ -335,7 +381,7 @@ export const moveFile: AppRouteHandler<TMoveFileRoute> = async (ctx) => {
  * Delete Resource
  */
 export const deleteResource: AppRouteHandler<TDeleteResourceRoute> = async (ctx) => {
-	const { db, userData } = ctx.var;
+	const { db, userData, requestId } = ctx.var;
 	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 
@@ -355,6 +401,15 @@ export const deleteResource: AppRouteHandler<TDeleteResourceRoute> = async (ctx)
 		});
 	}
 
+	// Log activity (fire-and-forget)
+	logActivity({
+		actionType: "delete",
+		id: requestId,
+		resourceId,
+		targetType: "file",
+		userId,
+	});
+
 	return ctx.json(
 		{
 			data: updated,
@@ -368,7 +423,7 @@ export const deleteResource: AppRouteHandler<TDeleteResourceRoute> = async (ctx)
  * Archive Resource
  */
 export const archiveResource: AppRouteHandler<TArchiveResourceRoute> = async (ctx) => {
-	const { db, userData } = ctx.var;
+	const { db, userData, requestId } = ctx.var;
 	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 
@@ -388,6 +443,15 @@ export const archiveResource: AppRouteHandler<TArchiveResourceRoute> = async (ct
 		});
 	}
 
+	// Log activity (fire-and-forget)
+	logActivity({
+		actionType: "archive",
+		id: requestId,
+		resourceId,
+		targetType: "file",
+		userId,
+	});
+
 	return ctx.json(
 		{
 			data: updated,
@@ -401,7 +465,7 @@ export const archiveResource: AppRouteHandler<TArchiveResourceRoute> = async (ct
  * Restore Resource
  */
 export const restoreResource: AppRouteHandler<TRestoreResourceRoute> = async (ctx) => {
-	const { db, userData } = ctx.var;
+	const { db, userData, requestId } = ctx.var;
 	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 
@@ -420,6 +484,14 @@ export const restoreResource: AppRouteHandler<TRestoreResourceRoute> = async (ct
 			message: MESSAGES.RESOURCE.NOT_FOUND,
 		});
 	}
+
+	logActivity({
+		actionType: "restore",
+		id: requestId,
+		resourceId,
+		targetType: "file",
+		userId,
+	});
 
 	return ctx.json(
 		{

@@ -62,7 +62,7 @@ export const deleteCurrentUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) 
 		.set({ deletedAt: new Date(), status: "deleted" })
 		.where(and(eq(usersTable.id, userData?.id), isNull(usersTable.deletedAt)))
 		.returning();
-		
+
 	logger.debug("users.handlers@deleteCurrentUser#afterDelete", { deletedUser });
 
 	if (!deletedUser?.deletedAt) {

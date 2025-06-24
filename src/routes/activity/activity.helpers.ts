@@ -2,12 +2,14 @@ import { db } from "@/db";
 import { type actionTypeEnum, activityLogs, type targetTypeEnum } from "@/db/schema";
 
 export const logActivity = async ({
+	id,
 	userId,
 	resourceId,
 	actionType,
 	targetType,
 	details = null,
 }: {
+	id: string;
 	userId: string;
 	resourceId?: string;
 	targetType: (typeof targetTypeEnum.enumValues)[number];
@@ -18,6 +20,7 @@ export const logActivity = async ({
 		return db.insert(activityLogs).values({
 			actionType,
 			details,
+			id,
 			ipAddress: null,
 			resourceId,
 			targetType,
