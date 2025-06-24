@@ -9,8 +9,8 @@ import type { TGetResourceChildrenRoute, TResourcesRoute } from "./resources.rou
  * Get Resources Listing
  */
 export const resources: AppRouteHandler<TResourcesRoute> = async (ctx) => {
-	const userId = ctx.get("userData").id;
-	const db = ctx.get("db");
+	const { logger, db, userData } = ctx.var;
+	const userId = userData.id;
 	const { page, limit, offset, order, filters, includeTotal } = ctx.req.valid("query");
 
 	const orderBy = orderByQueryBuilder(order);
@@ -29,6 +29,7 @@ export const resources: AppRouteHandler<TResourcesRoute> = async (ctx) => {
 		},
 		and(eq(resourcesTable.ownerId, userId), isNull(resourcesTable.parentId), eq(resourcesTable.status, "active")),
 	);
+	logger.debug("resources.handlers@resources#beforeQuery", { orderBy, where });
 
 	const [listing, totalCount] = await Promise.all([
 		db.query.resources.findMany({
@@ -39,6 +40,7 @@ export const resources: AppRouteHandler<TResourcesRoute> = async (ctx) => {
 		}),
 		totalCountQueryBuilder(resourcesTable, includeTotal, where),
 	]);
+	logger.debug("resources.handlers@resources#afterQuery", { listingCount: listing.length, totalCount });
 
 	const pageCount = Math.ceil((totalCount ?? listing.length) / limit);
 
@@ -63,10 +65,9 @@ export const resources: AppRouteHandler<TResourcesRoute> = async (ctx) => {
  * Get Resource Children
  */
 export const getResourceChildren: AppRouteHandler<TGetResourceChildrenRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { logger, db, userData } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
-
 	const { page, limit, offset, order, filters, includeTotal } = ctx.req.valid("query");
 
 	const orderBy = orderByQueryBuilder(order);
@@ -89,6 +90,7 @@ export const getResourceChildren: AppRouteHandler<TGetResourceChildrenRoute> = a
 		},
 		and(eq(resourcesTable.ownerId, userId), eq(resourcesTable.parentId, resourceId), eq(resourcesTable.status, "active")),
 	);
+	logger.debug("resources.handlers@getResourceChildren#beforeQuery", { orderBy, where });
 
 	const [listing, totalCount] = await Promise.all([
 		db.query.resources.findMany({
@@ -99,6 +101,7 @@ export const getResourceChildren: AppRouteHandler<TGetResourceChildrenRoute> = a
 		}),
 		totalCountQueryBuilder(resourcesTable, includeTotal, where),
 	]);
+	logger.debug("resources.handlers@getResourceChildren#afterQuery", { listingCount: listing.length, totalCount });
 
 	const pageCount = Math.ceil((totalCount ?? listing.length) / limit);
 

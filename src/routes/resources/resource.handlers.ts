@@ -1,9 +1,11 @@
+import { differenceInSeconds } from "date-fns";
 import { and, eq, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import { HTTP_STATUSES, MESSAGES } from "@/constants";
+import { DEFAULT_SIGNED_URL_EXPIRY_IN_SECONDS, HTTP_STATUSES, MESSAGES } from "@/constants";
 import { storage } from "@/db/lib/storage";
 import { resources as resourcesTable, users as usersTable } from "@/db/schema";
 import type { AppRouteHandler } from "@/helpers/types";
+import { logActivity } from "@/routes/activity/activity.helpers";
 import type {
 	TArchiveResourceRoute,
 	TCreateFolderRoute,
@@ -15,14 +17,14 @@ import type {
 	TRestoreResourceRoute,
 	TUploadFileRoute,
 } from "./resource.routes";
-import { computeFileHash, generateIdAndPath, generateNewStoragePath, getUniqueFolderName } from "./resources.helpers";
+import { canAccessResource, computeFileHash, generateIdAndPath, generateNewStoragePath, getUniqueFolderName } from "./resources.helpers";
 
 /**
  * Create new Folder
  */
 export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const ownerId = ctx.get("userData").id;
+	const { db, logger, userData, requestId } = ctx.var;
+	const ownerId = userData.id;
 	const { name, parentId } = ctx.req.valid("json");
 	const { id, storagePath } = await generateIdAndPath(ownerId, parentId);
 	const uniqueName = await getUniqueFolderName(db, ownerId, name, parentId);
@@ -38,6 +40,7 @@ export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => 
 	});
 
 	if (error) {
+		logger.error(error, "resources.handlers@createFolder#001");
 		throw new HTTPException(HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE, {
 			cause: "resources.handlers@createFolder#001",
 			message: MESSAGES.RESOURCE.CREATED_FOLDER_FAILED,
@@ -64,6 +67,15 @@ export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => 
 			});
 		});
 
+	logActivity({
+		actionType: "create",
+		details: { name: uniqueName },
+		id: requestId,
+		resourceId: newCreatedFolder.id,
+		targetType: "folder",
+		userId: ownerId,
+	});
+
 	return ctx.json(
 		{
 			data: newCreatedFolder,
@@ -77,15 +89,15 @@ export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => 
  * Upload new File
  */
 export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const ownerId = ctx.get("userData").id;
+	const { db, logger, userData, requestId } = ctx.var;
+	const ownerId = userData.id;
 	const { parentId, file } = ctx.req.valid("form");
 
 	const contentHash = await computeFileHash(file);
 	const { id, storagePath } = await generateIdAndPath(ownerId, parentId);
 
 	const [existingFile, userStorage] = await Promise.all([
-		await db.query.resources.findFirst({
+		db.query.resources.findFirst({
 			where: (r, { and, or, eq, isNull }) =>
 				and(eq(r.ownerId, ownerId), parentId ? eq(r.parentId, parentId) : isNull(r.parentId), or(eq(r.name, file.name), eq(r.contentHash, contentHash))),
 		}),
@@ -123,6 +135,7 @@ export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
 	});
 
 	if (error) {
+		logger.error("resources.handlers@uploadFile#003", error);
 		throw new HTTPException(HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE, {
 			cause: "resources.handlers@uploadFile#003",
 			message: MESSAGES.RESOURCE.UPLOAD_FAILED,
@@ -153,6 +166,15 @@ export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
 			return newFile;
 		});
 
+		logActivity({
+			actionType: "upload",
+			details: { mimeType: file.type, name: file.name },
+			id: requestId,
+			resourceId: newFile.id,
+			targetType: "file",
+			userId: ownerId,
+		});
+
 		return ctx.json(
 			{
 				data: newFile,
@@ -162,6 +184,7 @@ export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
 		);
 	} catch (error) {
 		await storage.from("uploads").remove([storagePath]);
+		logger.error("resources.handlers@uploadFile#004", error);
 
 		throw new HTTPException(HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE, {
 			cause: "resources.handlers@uploadFile#004",
@@ -174,8 +197,8 @@ export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
  * Get Resource Details
  */
 export const resource: AppRouteHandler<TResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData } = ctx.var;
+	const userId = userData.id;
 
 	const resourceId = ctx.req.valid("param").id;
 
@@ -197,32 +220,49 @@ export const resource: AppRouteHandler<TResourceRoute> = async (ctx) => {
  * Download Resource
  */
 export const downloadResource: AppRouteHandler<TDownloadResourceRoute> = async (ctx) => {
-	const userId = ctx.get("userData").id;
+	const { userData, requestId } = ctx.var;
+	const userId = userData?.id;
 	const resourceId = ctx.req.valid("param").id;
+	const token = ctx.req.valid("query").token;
 
-	const details = await ctx.var.db.query.resources.findFirst({
-		where: (r, { and, eq }) => and(eq(r.ownerId, userId), eq(r.id, resourceId), eq(r.isFolder, false)),
-	});
+	const { isAllowed, resource, share } = await canAccessResource(userId, resourceId, token);
+	const { storagePath, ownerId, ...rest } = resource;
 
-	if (!details) {
-		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
-			cause: "resources.handlers@downloadResource#001",
-			message: MESSAGES.RESOURCE.NOT_FOUND,
+	if (!isAllowed) {
+		throw new HTTPException(HTTP_STATUSES.FORBIDDEN.CODE, {
+			cause: "resources.handlers@downloadResource#003",
+			message: MESSAGES.RESOURCE.ACCESS_DENIED,
 		});
 	}
 
-	ctx.res.headers.set("Content-Disposition", `attachment; filename="${details.name}"`);
-	ctx.res.headers.set("Content-Type", details.mimeType as string);
+	const expiryInSeconds = share?.expiresAt ? differenceInSeconds(new Date(share.expiresAt), new Date()) : DEFAULT_SIGNED_URL_EXPIRY_IN_SECONDS;
 
-	return ctx.body("dummy file content", HTTP_STATUSES.OK.CODE);
+	const { data } = await storage.from("uploads").createSignedUrl(storagePath, expiryInSeconds);
+
+	if (!data?.signedUrl) {
+		throw new HTTPException(HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE, {
+			cause: "resources.handlers@downloadResource#002",
+			message: MESSAGES.RESOURCE.DOWNLOAD_FAILED,
+		});
+	}
+
+	logActivity({
+		actionType: "download",
+		id: requestId,
+		resourceId,
+		targetType: resource.isFolder ? "folder" : "file",
+		userId,
+	});
+
+	return ctx.json({ url: data.signedUrl, ...rest }, HTTP_STATUSES.OK.CODE);
 };
 
 /**
  * Rename Resource
  */
 export const renameResource: AppRouteHandler<TRenameResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData, requestId } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 	const { name } = ctx.req.valid("json");
 
@@ -239,6 +279,15 @@ export const renameResource: AppRouteHandler<TRenameResourceRoute> = async (ctx)
 		});
 	}
 
+	logActivity({
+		actionType: "rename",
+		details: { name },
+		id: requestId,
+		resourceId,
+		targetType: updated.isFolder ? "folder" : "file",
+		userId,
+	});
+
 	return ctx.json(updated, HTTP_STATUSES.OK.CODE);
 };
 
@@ -246,8 +295,8 @@ export const renameResource: AppRouteHandler<TRenameResourceRoute> = async (ctx)
  * Move Resource
  */
 export const moveFile: AppRouteHandler<TMoveFileRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData, requestId } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 	const { parentId } = ctx.req.valid("json");
 
@@ -307,6 +356,16 @@ export const moveFile: AppRouteHandler<TMoveFileRoute> = async (ctx) => {
 			});
 		}
 
+		// Log activity (fire-and-forget)
+		logActivity({
+			actionType: "move",
+			details: { newParentId: parentId },
+			id: requestId,
+			resourceId,
+			targetType: "file",
+			userId,
+		});
+
 		return ctx.json(updated, HTTP_STATUSES.OK.CODE);
 	} catch (error) {
 		await storage.from("uploads").move(newStoragePath, resource.storagePath);
@@ -322,8 +381,8 @@ export const moveFile: AppRouteHandler<TMoveFileRoute> = async (ctx) => {
  * Delete Resource
  */
 export const deleteResource: AppRouteHandler<TDeleteResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData, requestId } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 
 	const [updated] = await db
@@ -342,6 +401,15 @@ export const deleteResource: AppRouteHandler<TDeleteResourceRoute> = async (ctx)
 		});
 	}
 
+	// Log activity (fire-and-forget)
+	logActivity({
+		actionType: "delete",
+		id: requestId,
+		resourceId,
+		targetType: "file",
+		userId,
+	});
+
 	return ctx.json(
 		{
 			data: updated,
@@ -355,8 +423,8 @@ export const deleteResource: AppRouteHandler<TDeleteResourceRoute> = async (ctx)
  * Archive Resource
  */
 export const archiveResource: AppRouteHandler<TArchiveResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData, requestId } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 
 	const [updated] = await db
@@ -375,6 +443,15 @@ export const archiveResource: AppRouteHandler<TArchiveResourceRoute> = async (ct
 		});
 	}
 
+	// Log activity (fire-and-forget)
+	logActivity({
+		actionType: "archive",
+		id: requestId,
+		resourceId,
+		targetType: "file",
+		userId,
+	});
+
 	return ctx.json(
 		{
 			data: updated,
@@ -388,8 +465,8 @@ export const archiveResource: AppRouteHandler<TArchiveResourceRoute> = async (ct
  * Restore Resource
  */
 export const restoreResource: AppRouteHandler<TRestoreResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData, requestId } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 
 	const [updated] = await db
@@ -407,6 +484,14 @@ export const restoreResource: AppRouteHandler<TRestoreResourceRoute> = async (ct
 			message: MESSAGES.RESOURCE.NOT_FOUND,
 		});
 	}
+
+	logActivity({
+		actionType: "restore",
+		id: requestId,
+		resourceId,
+		targetType: "file",
+		userId,
+	});
 
 	return ctx.json(
 		{

@@ -12,6 +12,7 @@ export const home = createRoute({
 			schema: createMessageSchema({ example: "Hello World!" }),
 		}),
 	},
+	summary: "Home route",
 	tags: ["Internal"],
 });
 
@@ -35,6 +36,7 @@ export const healthCheck = createRoute({
 			schema: createErrorSchema(),
 		}),
 	},
+	summary: "Health check route to check the API and DB connection",
 	tags: ["Internal"],
 });
 

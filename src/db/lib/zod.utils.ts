@@ -1,7 +1,7 @@
 import { createSchemaFactory } from "drizzle-zod";
 import { z } from "zod/v4";
 
-const { createInsertSchema, createSelectSchema, createUpdateSchema } = createSchemaFactory({ zodInstance: z });
+const { createInsertSchema, createSelectSchema, createUpdateSchema } = createSchemaFactory({ coerce: true, zodInstance: z });
 
 export type { output as inferType } from "zod/v4";
 export { createInsertSchema, createSelectSchema, createUpdateSchema, z };

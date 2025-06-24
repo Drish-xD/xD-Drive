@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { index, inet, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { defaultTimestamps } from "@/db/lib";
-import { activityTypeEnum } from "./enums";
+import { actionTypeEnum, targetTypeEnum } from "./enums";
 import { resources } from "./resources";
 import { users } from "./users";
 
@@ -11,14 +11,13 @@ import { users } from "./users";
 export const activityLogs = pgTable(
 	"activity_logs",
 	{
-		activityType: activityTypeEnum().notNull(),
-
-		// Timestamps
+		actionType: actionTypeEnum().notNull(),
 		createdAt: defaultTimestamps.createdAt,
 		details: jsonb(),
 		id: uuid().primaryKey().defaultRandom(),
 		ipAddress: inet(),
 		resourceId: uuid().references(() => resources.id, { onDelete: "set null" }),
+		targetType: targetTypeEnum().notNull(),
 		userAgent: text(),
 		userId: uuid()
 			.notNull()

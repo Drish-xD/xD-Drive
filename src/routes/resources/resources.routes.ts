@@ -24,6 +24,7 @@ export const resources = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Get all resources with pagination",
 	tags: ["Resources"],
 });
 
@@ -58,6 +59,7 @@ export const getResourceChildren = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Get a resource children with pagination",
 	tags: ["Resources"],
 });
 

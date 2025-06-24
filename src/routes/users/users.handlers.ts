@@ -10,25 +10,31 @@ import type { TDeleteUserRoute, TUpdateUserRoute, TUserRoute, TUsersMeRoute, TUs
  * Current user details
  */
 export const currentUser: AppRouteHandler<TUsersMeRoute> = async (ctx) => {
-	const userDetails = ctx.get("userData");
+	const { logger, userData } = ctx.var;
 
-	return ctx.json(userDetails, HTTP_STATUSES.OK.CODE);
+	logger.debug("users.handlers@currentUser#userData", { userId: userData?.id });
+
+	return ctx.json(userData, HTTP_STATUSES.OK.CODE);
 };
 
 /**
  * Update User Details
  */
 export const updateCurrentUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) => {
-	const userDetails = ctx.get("userData");
+	const { logger, userData } = ctx.var;
 	const updatePayload = ctx.req.valid("json");
 
 	const [updatedUserDetails] = await ctx.var.db
 		.update(usersTable)
 		.set(updatePayload)
-		.where(and(eq(usersTable.id, userDetails?.id), eq(usersTable.status, "active")))
+		.where(and(eq(usersTable.id, userData?.id), eq(usersTable.status, "active")))
 		.returning();
 
+	logger.debug("users.handlers@updateCurrentUser#afterUpdate", { updatedUserDetails });
+
 	if (!updatedUserDetails) {
+		logger.error("users.handlers@updateCurrentUser#notFound", { userId: userData?.id });
+
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
 			cause: "users.handlers@user#001",
 			message: MESSAGES.USER.NOT_FOUND,
@@ -49,15 +55,19 @@ export const updateCurrentUser: AppRouteHandler<TUpdateUserRoute> = async (ctx) 
  * Delete User
  */
 export const deleteCurrentUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) => {
-	const userDetails = ctx.get("userData");
+	const { logger, userData } = ctx.var;
 
 	const [deletedUser] = await ctx.var.db
 		.update(usersTable)
 		.set({ deletedAt: new Date(), status: "deleted" })
-		.where(and(eq(usersTable.id, userDetails.id), isNull(usersTable.deletedAt)))
+		.where(and(eq(usersTable.id, userData?.id), isNull(usersTable.deletedAt)))
 		.returning();
 
+	logger.debug("users.handlers@deleteCurrentUser#afterDelete", { deletedUser });
+
 	if (!deletedUser?.deletedAt) {
+		logger.error("users.handlers@deleteCurrentUser#notFound", { userId: userData?.id });
+
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
 			cause: "users.handlers@user#001",
 			message: MESSAGES.USER.NOT_FOUND,
@@ -81,8 +91,10 @@ export const deleteCurrentUser: AppRouteHandler<TDeleteUserRoute> = async (ctx) 
  * Get Users Listing
  */
 export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
-	const db = ctx.get("db");
+	const { logger, db } = ctx.var;
 	const { page, limit, offset, order, filters, includeTotal } = ctx.req.valid("query");
+
+	logger.debug("users.handlers@users#start", { filters, includeTotal, limit, offset, order, page });
 
 	const orderBy = orderByQueryBuilder(order);
 	const where = whereQueryBuilder(filters, {
@@ -107,6 +119,8 @@ export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
 		totalCountQueryBuilder(usersTable, includeTotal, where),
 	]);
 
+	logger.debug("users.handlers@users#afterQuery", { totalCount, usersCount: usersListing.length });
+
 	const pageCount = Math.ceil((totalCount ?? usersListing.length) / limit);
 
 	return ctx.json(
@@ -130,14 +144,18 @@ export const users: AppRouteHandler<TUsersRoute> = async (ctx) => {
  * Get User Details
  */
 export const user: AppRouteHandler<TUserRoute> = async (ctx) => {
+	const { logger } = ctx.var;
 	const userId = ctx.req.valid("param")?.id;
+	logger.debug("users.handlers@user#start", { userId });
 
 	const userDetails = await ctx.var.db.query.users.findFirst({
 		columns: { passwordHash: false },
 		where: (users, fn) => fn.and(fn.eq(users.id, userId), fn.eq(users.status, "active")),
 	});
+	logger.debug("users.handlers@user#afterQuery", { userDetails });
 
 	if (!userDetails) {
+		logger.error("users.handlers@user#notFound", { userId });
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
 			cause: "users.handlers@user#001",
 			message: MESSAGES.USER.NOT_FOUND,

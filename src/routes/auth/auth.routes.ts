@@ -16,7 +16,7 @@ export const register = createRoute({
 		}),
 	},
 	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
+		[HTTP_STATUSES.CREATED.CODE]: createJson({
 			description: MESSAGES.AUTH.REGISTERED,
 			schema: selectUserSchema,
 		}),
@@ -31,6 +31,7 @@ export const register = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Register a new user",
 	tags: ["Auth"],
 });
 
@@ -66,6 +67,7 @@ export const login = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Login a user",
 	tags: ["Auth"],
 });
 
@@ -94,6 +96,7 @@ export const refreshToken = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Generate new refresh token",
 	tags: ["Auth"],
 });
 
@@ -114,6 +117,7 @@ export const logout = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Logout a user",
 	tags: ["Auth"],
 });
 
@@ -142,6 +146,7 @@ export const verifyEmail = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Verify User Email",
 	tags: ["Auth"],
 });
 

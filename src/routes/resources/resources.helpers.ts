@@ -1,3 +1,4 @@
+import { isBefore } from "date-fns";
 import { HTTPException } from "hono/http-exception";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { type DB, db } from "@/db";
@@ -96,4 +97,57 @@ export const getUniqueFolderName = async (db: Omit<DB, "$client">, ownerId: stri
 
 export const generateNewStoragePath = (ownerId: string, resourceId: string, parentStoragePath?: string) => {
 	return parentStoragePath ? `${parentStoragePath}/${resourceId}` : `user_${ownerId}/${resourceId}`;
+};
+
+export const isExpired = (expiresAt?: Date | null): boolean => {
+	return !!expiresAt && isBefore(expiresAt, new Date());
+};
+
+export const canAccessResource = async (userId: string, resourceId: string, token?: string) => {
+	const resource = await db.query.resources.findFirst({
+		columns: {
+			createdAt: true,
+			id: true,
+			isFolder: true,
+			mimeType: true,
+			name: true,
+			ownerId: true,
+			storagePath: true,
+			updatedAt: true,
+		},
+		where: (r, { and, eq }) => and(eq(r.id, resourceId), eq(r.status, "active")),
+	});
+
+	if (!resource) {
+		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
+			cause: "resources.helpers@canAccessResource#001",
+			message: MESSAGES.RESOURCE.NOT_FOUND,
+		});
+	}
+
+	if (resource.ownerId === userId) {
+		return { isAllowed: true, resource, share: null };
+	}
+
+	if (userId) {
+		const share = await db.query.resourceShares.findFirst({
+			where: (s, { eq, and }) => and(eq(s.resourceId, resourceId), eq(s.grantedTo, userId), eq(s.isPublic, false)),
+		});
+
+		if (share && !isExpired(share.expiresAt)) {
+			return { isAllowed: true, resource, share };
+		}
+	}
+
+	if (token) {
+		const publicShare = await db.query.resourceShares.findFirst({
+			where: (s, { eq, and }) => and(eq(s.resourceId, resourceId), eq(s.publicLinkToken, token), eq(s.isPublic, true)),
+		});
+
+		if (publicShare && !isExpired(publicShare.expiresAt)) {
+			return { isAllowed: true, resource, share: publicShare };
+		}
+	}
+
+	return { isAllowed: false, resource, share: null };
 };

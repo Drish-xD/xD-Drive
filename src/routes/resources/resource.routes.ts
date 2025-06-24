@@ -1,7 +1,15 @@
 import { createRoute } from "@hono/zod-openapi";
 import { HTTP_STATUSES, MESSAGES } from "@/constants";
 import { createErrorJson, createJson, createMessageSchema, createMultiPartForm, createUuidSchema } from "@/helpers/schema.helpers";
-import { createFolderSchema, moveResourceSchema, renameResourceSchema, selectResourceSchema, uploadFileSchema } from "@/models";
+import {
+	createFolderSchema,
+	downloadResourceQuerySchema,
+	downloadResourceSchema,
+	moveResourceSchema,
+	renameResourceSchema,
+	selectResourceSchema,
+	uploadFileSchema,
+} from "@/models";
 
 /**
  * Create New Folder route
@@ -70,6 +78,7 @@ export const uploadFile = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Get a resource details",
 	tags: ["Resource"],
 });
 
@@ -103,6 +112,7 @@ export const resource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Download a resource",
 	tags: ["Resource"],
 });
 
@@ -116,19 +126,13 @@ export const downloadResource = createRoute({
 	path: "/:id/download",
 	request: {
 		params: createUuidSchema({ description: "Resource ID" }),
+		query: downloadResourceQuerySchema,
 	},
 	responses: {
-		[HTTP_STATUSES.OK.CODE]: {
-			content: {
-				"application/octet-stream": {
-					schema: {
-						format: "binary",
-						type: "string",
-					},
-				},
-			},
+		[HTTP_STATUSES.OK.CODE]: createJson({
 			description: "Download a resource",
-		},
+			schema: downloadResourceSchema,
+		}),
 		[HTTP_STATUSES.UNAUTHORIZED.CODE]: createErrorJson({
 			message: MESSAGES.AUTH.UNAUTHORIZED,
 			status: HTTP_STATUSES.UNAUTHORIZED,
@@ -143,6 +147,7 @@ export const downloadResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Delete a resource",
 	tags: ["Resource"],
 });
 
@@ -176,6 +181,7 @@ export const deleteResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Archive a resource",
 	tags: ["Resource"],
 });
 
@@ -209,6 +215,7 @@ export const archiveResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Archive a resource",
 	tags: ["Resource"],
 });
 
@@ -242,6 +249,7 @@ export const restoreResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Restore a resource",
 	tags: ["Resource"],
 });
 
@@ -279,6 +287,7 @@ export const renameResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Rename a resource",
 	tags: ["Resource"],
 });
 
@@ -316,6 +325,7 @@ export const moveFile = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Move a file",
 	tags: ["Resource"],
 });
 
