@@ -22,8 +22,8 @@ import { canAccessResource, computeFileHash, generateIdAndPath, generateNewStora
  * Create new Folder
  */
 export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const ownerId = ctx.get("userData").id;
+	const { db, logger, userData } = ctx.var;
+	const ownerId = userData.id;
 	const { name, parentId } = ctx.req.valid("json");
 	const { id, storagePath } = await generateIdAndPath(ownerId, parentId);
 	const uniqueName = await getUniqueFolderName(db, ownerId, name, parentId);
@@ -39,6 +39,7 @@ export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => 
 	});
 
 	if (error) {
+		logger.error(error, "resources.handlers@createFolder#001");
 		throw new HTTPException(HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE, {
 			cause: "resources.handlers@createFolder#001",
 			message: MESSAGES.RESOURCE.CREATED_FOLDER_FAILED,
@@ -78,15 +79,15 @@ export const createFolder: AppRouteHandler<TCreateFolderRoute> = async (ctx) => 
  * Upload new File
  */
 export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const ownerId = ctx.get("userData").id;
+	const { db, logger, userData } = ctx.var;
+	const ownerId = userData.id;
 	const { parentId, file } = ctx.req.valid("form");
 
 	const contentHash = await computeFileHash(file);
 	const { id, storagePath } = await generateIdAndPath(ownerId, parentId);
 
 	const [existingFile, userStorage] = await Promise.all([
-		await db.query.resources.findFirst({
+		db.query.resources.findFirst({
 			where: (r, { and, or, eq, isNull }) =>
 				and(eq(r.ownerId, ownerId), parentId ? eq(r.parentId, parentId) : isNull(r.parentId), or(eq(r.name, file.name), eq(r.contentHash, contentHash))),
 		}),
@@ -124,6 +125,7 @@ export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
 	});
 
 	if (error) {
+		logger.error("resources.handlers@uploadFile#003", error);
 		throw new HTTPException(HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE, {
 			cause: "resources.handlers@uploadFile#003",
 			message: MESSAGES.RESOURCE.UPLOAD_FAILED,
@@ -163,6 +165,7 @@ export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
 		);
 	} catch (error) {
 		await storage.from("uploads").remove([storagePath]);
+		logger.error("resources.handlers@uploadFile#004", error);
 
 		throw new HTTPException(HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE, {
 			cause: "resources.handlers@uploadFile#004",
@@ -175,8 +178,8 @@ export const uploadFile: AppRouteHandler<TUploadFileRoute> = async (ctx) => {
  * Get Resource Details
  */
 export const resource: AppRouteHandler<TResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData } = ctx.var;
+	const userId = userData.id;
 
 	const resourceId = ctx.req.valid("param").id;
 
@@ -198,7 +201,8 @@ export const resource: AppRouteHandler<TResourceRoute> = async (ctx) => {
  * Download Resource
  */
 export const downloadResource: AppRouteHandler<TDownloadResourceRoute> = async (ctx) => {
-	const userId = ctx.get("userData")?.id;
+	const { userData } = ctx.var;
+	const userId = userData?.id;
 	const resourceId = ctx.req.valid("param").id;
 	const token = ctx.req.valid("query").token;
 
@@ -230,8 +234,8 @@ export const downloadResource: AppRouteHandler<TDownloadResourceRoute> = async (
  * Rename Resource
  */
 export const renameResource: AppRouteHandler<TRenameResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 	const { name } = ctx.req.valid("json");
 
@@ -255,8 +259,8 @@ export const renameResource: AppRouteHandler<TRenameResourceRoute> = async (ctx)
  * Move Resource
  */
 export const moveFile: AppRouteHandler<TMoveFileRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 	const { parentId } = ctx.req.valid("json");
 
@@ -331,8 +335,8 @@ export const moveFile: AppRouteHandler<TMoveFileRoute> = async (ctx) => {
  * Delete Resource
  */
 export const deleteResource: AppRouteHandler<TDeleteResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 
 	const [updated] = await db
@@ -364,8 +368,8 @@ export const deleteResource: AppRouteHandler<TDeleteResourceRoute> = async (ctx)
  * Archive Resource
  */
 export const archiveResource: AppRouteHandler<TArchiveResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 
 	const [updated] = await db
@@ -397,8 +401,8 @@ export const archiveResource: AppRouteHandler<TArchiveResourceRoute> = async (ct
  * Restore Resource
  */
 export const restoreResource: AppRouteHandler<TRestoreResourceRoute> = async (ctx) => {
-	const db = ctx.get("db");
-	const userId = ctx.get("userData").id;
+	const { db, userData } = ctx.var;
+	const userId = userData.id;
 	const resourceId = ctx.req.valid("param").id;
 
 	const [updated] = await db

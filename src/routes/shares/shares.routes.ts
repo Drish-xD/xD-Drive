@@ -22,6 +22,7 @@ export const createShareLink = createRoute({
 		[HTTP_STATUSES.CONFLICT.CODE]: createJson({ description: "Share already exists", schema: createErrorSchema() }),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({ description: "Server error", schema: createErrorSchema() }),
 	},
+	summary: "Get resource by public link token",
 	tags: ["Share"],
 });
 
@@ -41,6 +42,7 @@ export const getShareLink = createRoute({
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createJson({ description: "Link not found", schema: createErrorSchema() }),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({ description: "Server error", schema: createErrorSchema() }),
 	},
+	summary: "Delete public share link",
 	tags: ["Share"],
 });
 
@@ -56,6 +58,7 @@ export const deleteShareLink = createRoute({
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createJson({ description: "Link not found", schema: createErrorSchema() }),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({ description: "Server error", schema: createErrorSchema() }),
 	},
+	summary: "Delete public share link",
 	tags: ["Share"],
 });
 
@@ -78,6 +81,7 @@ export const createShareEmail = createRoute({
 		[HTTP_STATUSES.CONFLICT.CODE]: createJson({ description: "Share already exists", schema: createErrorSchema() }),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({ description: "Server error", schema: createErrorSchema() }),
 	},
+	summary: "Share resource with user by email",
 	tags: ["Share"],
 });
 
@@ -95,6 +99,7 @@ export const deleteShareEmail = createRoute({
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createJson({ description: "Share not found", schema: createErrorSchema() }),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({ description: "Server error", schema: createErrorSchema() }),
 	},
+	summary: "Delete user share",
 	tags: ["Share"],
 });
 
@@ -113,6 +118,7 @@ export const getResourcePermissions = createRoute({
 		[HTTP_STATUSES.NOT_FOUND.CODE]: createJson({ description: "Resource not found", schema: createErrorSchema() }),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createJson({ description: "Server error", schema: createErrorSchema() }),
 	},
+	summary: "Get resource permissions",
 	tags: ["Share"],
 });
 

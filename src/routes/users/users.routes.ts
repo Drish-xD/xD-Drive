@@ -25,6 +25,7 @@ export const currentUser = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Get current user details",
 	tags: ["Users"],
 });
 
@@ -38,13 +39,13 @@ export const updateCurrentUser = createRoute({
 	path: "/me",
 	request: {
 		body: createJson({
-			description: "Payload to update user",
+			description: "Payload to update current user",
 			schema: updateUserSchema,
 		}),
 	},
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Update user details",
+			description: "Update current user details",
 			schema: createMessageSchema({ example: MESSAGES.USER.UPDATED_SUCCESS }).extend({
 				data: selectUserSchema,
 			}),
@@ -63,6 +64,7 @@ export const updateCurrentUser = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Update current user details",
 	tags: ["Users"],
 });
 
@@ -76,7 +78,7 @@ export const deleteCurrentUser = createRoute({
 	path: "/me",
 	responses: {
 		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Delete user",
+			description: "Soft delete current user",
 			schema: createMessageSchema({ example: MESSAGES.USER.DELETED_SUCCESS }).extend({
 				data: selectUserSchema.pick({
 					deletedAt: true,
@@ -95,6 +97,7 @@ export const deleteCurrentUser = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Soft delete current user",
 	tags: ["Users"],
 });
 
@@ -120,6 +123,7 @@ export const users = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Get all users with pagination",
 	tags: ["Users"],
 });
 
@@ -153,6 +157,7 @@ export const user = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Get a user details",
 	tags: ["Users"],
 });
 

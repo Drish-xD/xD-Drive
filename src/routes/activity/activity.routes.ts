@@ -25,6 +25,7 @@ export const getUserActivityRoute = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Get user activity logs",
 	tags: ["Activity"],
 });
 
@@ -50,6 +51,7 @@ export const getResourceActivityRoute = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Get resource activity logs",
 	tags: ["Activity"],
 });
 

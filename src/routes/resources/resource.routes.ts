@@ -78,6 +78,7 @@ export const uploadFile = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Get a resource details",
 	tags: ["Resource"],
 });
 
@@ -111,6 +112,7 @@ export const resource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Download a resource",
 	tags: ["Resource"],
 });
 
@@ -145,6 +147,7 @@ export const downloadResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Delete a resource",
 	tags: ["Resource"],
 });
 
@@ -178,6 +181,7 @@ export const deleteResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Archive a resource",
 	tags: ["Resource"],
 });
 
@@ -211,6 +215,7 @@ export const archiveResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Archive a resource",
 	tags: ["Resource"],
 });
 
@@ -244,6 +249,7 @@ export const restoreResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Restore a resource",
 	tags: ["Resource"],
 });
 
@@ -281,6 +287,7 @@ export const renameResource = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Rename a resource",
 	tags: ["Resource"],
 });
 
@@ -318,6 +325,7 @@ export const moveFile = createRoute({
 		}),
 		[HTTP_STATUSES.INTERNAL_SERVER_ERROR.CODE]: createErrorJson(),
 	},
+	summary: "Move a file",
 	tags: ["Resource"],
 });
 

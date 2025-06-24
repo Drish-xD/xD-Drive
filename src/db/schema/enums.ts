@@ -6,19 +6,6 @@ export const resourceStatusEnum = pgEnum("resource_status", ["active", "deleted"
 
 export const accessLevelEnum = pgEnum("resource_access_level", ["viewer", "commenter", "editor"]);
 
-export const activityTypeEnum = pgEnum("activity_type", [
-	"create",
-	"upload",
-	"download",
-	"update",
-	"rename",
-	"move",
-	"share",
-	"unshare",
-	"delete",
-	"restore",
-	"tag",
-	"untag",
-	"version_create",
-	"version_restore",
-]);
+export const targetTypeEnum = pgEnum("target_type", ["file", "folder"]);
+
+export const actionTypeEnum = pgEnum("action_type", ["create", "rename", "move", "delete", "restore", "archive", "download", "share", "unshare", "upload"]);

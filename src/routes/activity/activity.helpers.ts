@@ -1,23 +1,30 @@
 import { db } from "@/db";
-import { activityLogs, type activityTypeEnum } from "@/db/schema";
+import { type actionTypeEnum, activityLogs, type targetTypeEnum } from "@/db/schema";
 
 export const logActivity = async ({
 	userId,
 	resourceId,
-	type,
+	actionType,
+	targetType,
 	details = null,
 }: {
 	userId: string;
 	resourceId?: string;
-	type: (typeof activityTypeEnum.enumValues)[number];
+	targetType: (typeof targetTypeEnum.enumValues)[number];
+	actionType: (typeof actionTypeEnum.enumValues)[number];
 	details?: Record<string, unknown> | null;
 }) => {
-	return db.insert(activityLogs).values({
-		activityType: type,
-		details,
-		ipAddress: null,
-		resourceId,
-		userAgent: null,
-		userId,
-	});
+	try {
+		return db.insert(activityLogs).values({
+			actionType,
+			details,
+			ipAddress: null,
+			resourceId,
+			targetType,
+			userAgent: null,
+			userId,
+		});
+	} catch (error) {
+		console.error(error);
+	}
 };

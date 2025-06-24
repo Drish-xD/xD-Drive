@@ -30,7 +30,7 @@ export const initOpenAPI = (app: AppInstance) => {
 	app.get(
 		"/docs",
 		Scalar({
-			layout: "modern",
+			layout: "classic",
 			theme: "saturn",
 			url: "/docs/openapi",
 		}),
