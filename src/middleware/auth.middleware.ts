@@ -20,6 +20,7 @@ export const verifyAccessToken = () =>
 
 		logger.debug({ path, requestId, status: "Validating token" }, "[Middleware] Verify access token");
 		await jwt({
+			alg: "HS256",
 			cookie: {
 				key: COOKIES.ACCESS_TOKEN,
 				secret: CONFIG.COOKIE_SECRET,
@@ -68,7 +69,12 @@ export const setUserDataFromAccessToken = () =>
 		await next();
 	});
 
-export const verifyRefreshToken = () => jwt({ cookie: { key: COOKIES.REFRESH_TOKEN, secret: CONFIG.COOKIE_SECRET }, secret: CONFIG.JWT_REFRESH_SECRET });
+export const verifyRefreshToken = () =>
+	jwt({
+		alg: "HS256",
+		cookie: { key: COOKIES.REFRESH_TOKEN, secret: CONFIG.COOKIE_SECRET },
+		secret: CONFIG.JWT_REFRESH_SECRET,
+	});
 
 export const setUserDataFromRefreshToken = () =>
 	createMiddleware<AppBindings>(async (ctx, next) => {

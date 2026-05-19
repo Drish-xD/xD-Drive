@@ -75,7 +75,7 @@ export const getShareLink: AppRouteHandler<TGetShareLink> = async (ctx) => {
 	});
 	logger.debug("shares.handlers@getShareLink#share", { share });
 
-	if (!share || !share.isPublic) {
+	if (!share?.isPublic) {
 		logger.error("shares.handlers@getShareLink#notFound", { token });
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
 			cause: "shares.handlers@getShareLink#001",
@@ -106,7 +106,7 @@ export const deleteShareLink: AppRouteHandler<TDeleteShareLink> = async (ctx) =>
 	});
 	logger.debug("shares.handlers@deleteShareLink#share", { share });
 
-	if (!share || !share.isPublic) {
+	if (!share?.isPublic) {
 		logger.error("shares.handlers@deleteShareLink#notFound", { token });
 		throw new HTTPException(HTTP_STATUSES.NOT_FOUND.CODE, {
 			cause: "shares.handlers@deleteShareLink#001",
