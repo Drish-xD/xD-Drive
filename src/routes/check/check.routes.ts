@@ -7,12 +7,11 @@ export const home = createRoute({
 	method: "get",
 	path: "/",
 	responses: {
-		[HTTP_STATUSES.OK.CODE]: createJson({
-			description: "Home route",
-			schema: createMessageSchema({ example: "Hello World!" }),
-		}),
+		[HTTP_STATUSES.MOVED_TEMPORARILY.CODE]: {
+			description: "Redirects to API documentation",
+		},
 	},
-	summary: "Home route",
+	summary: "Redirect to docs",
 	tags: ["Internal"],
 });
 

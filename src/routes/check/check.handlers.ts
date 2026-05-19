@@ -17,10 +17,5 @@ export const healthCheck: AppRouteHandler<THealthCheckRoute> = async (ctx) => {
 };
 
 export const home: AppRouteHandler<THomeRoute> = (ctx) => {
-	return ctx.json(
-		{
-			message: "Hello World!",
-		},
-		HTTP_STATUSES.OK.CODE,
-	);
+	return ctx.redirect("/docs", HTTP_STATUSES.MOVED_TEMPORARILY.CODE);
 };
